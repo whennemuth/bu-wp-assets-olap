@@ -1,0 +1,118 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Create a simple aip gateway that services access to s3 objects with lambda serving an s3 proxy mechanism
+
+# https://stackoverflow.com/questions/47215424/returning-dynamic-content-type-via-aws-api-gateway-and-lambda-function
+
+# https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/DownloadDistS3AndCustomOrigins.html#concept_lambda_function_url
+
+Resources:
+
+  Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-images
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-images
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    DeletionPolicy: Delete
+
+
+  LambdaLogsGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-s3-proxy
+      RetentionInDays: 90
+
+  APIGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      BinaryMediaTypes: 
+        - '*/*'
+      CacheClusterEnabled: false
+      Description: String
+      EndpointConfiguration:
+        Type: REGIONAL
+      Name: !Sub ${AWS::StackName}-rest-api
+      StageName: dev
+      DefinitionBody:
+        openapi: 3.0.0
+        info:
+          version: 2016-09-12T17:50:37Z
+          title: ProxyIntegrationWithLambda
+        paths:
+          /{proxy+}:
+            x-amazon-apigateway-any-method:
+              produces:
+                - application/json
+              parameters:
+                - name: proxy
+                  in: path
+                  required: true
+                  type: string
+              responses: {}
+              x-amazon-apigateway-integration:
+                # responses:
+                #   default:
+                #     statusCode: 200
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations
+                passthroughBehavior: when_no_match
+                httpMethod: POST
+                type: aws_proxy
+
+  LambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-s3-proxy
+      Description: Receives https originated requests for s3 content and conditionally returns after applying authorization logic.
+      Runtime: nodejs14.x
+      Architectures: [ x86_64 ]
+      Handler: S3RequestHandler.Authorize
+      CodeUri: src/
+      Environment:
+        Variables:
+          S3_REGION: !Ref AWS::Region
+          S3_BUCKET: !Ref Bucket          
+      Events:
+        ProxyApiEvent:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+            RestApiId:
+              Ref: APIGateway
+      Policies:
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action: 
+                - logs:*
+              Resource: 
+                - !GetAtt LambdaLogsGroup.Arn
+            - Effect: Allow
+              Action: 
+                - s3:*
+              Resource: 
+                - !Sub arn:aws:s3:::${Bucket}
+                - !Sub arn:aws:s3:::${Bucket}/* 
+
+Outputs:
+
+  ApiGatewayID:
+    Description: The api gateway ID
+    Value: !Ref APIGateway
+
+  ApiGatewayRootResourceID:
+    Description: Root resource ID of the api gateway
+    Value: !GetAtt APIGateway.RootResourceId
+
+  Webpage:
+    Description: Webpage with images that target S3 content
+    Value: !Sub https://${APIGateway}.execute-api.us-east-1.amazonaws.com/Stage/index.htm

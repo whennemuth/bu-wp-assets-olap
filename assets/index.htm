@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <style>
+      div {
+        float:left;
+        clear: both;
+        padding: 10px;
+        font-size: 18px;
+      }
+    </style>    
+  </head>
+
+  <body topmargin="100" leftmargin="100">
+    <div>
+      <b>https://dz0mp1vyl0.execute-api.us-east-1.amazonaws.com/Stage/dilbert1.gif</b><br>
+      <i>(This image exists in s3 and should be served up)</i><br>
+      <img src="https://dz0mp1vyl0.execute-api.us-east-1.amazonaws.com/Stage/dilbert1.gif">
+    </div>
+    <div>
+      <b>https://dz0mp1vyl0.execute-api.us-east-1.amazonaws.com/Stage/dilbert2.gif</b><br>
+      <i>(This image exists in s3 and should be served up)</i><br>
+      <img src="https://dz0mp1vyl0.execute-api.us-east-1.amazonaws.com/Stage/dilbert2.gif">
+    </div>
+    <div>
+      <b>https://dz0mp1vyl0.execute-api.us-east-1.amazonaws.com/Stage/bogus.gif</b><br>
+      <i>(No such image in s3. This should blow up)</i><br>
+      <img src="https://dz0mp1vyl0.execute-api.us-east-1.amazonaws.com/Stage/bogus.gif">
+    </div>
+  </body>
+</html>
