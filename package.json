@@ -2,7 +2,7 @@
   "name": "bu-wp-assets-lambda-s3-proxy",
   "version": "1.0.0",
   "description": "Services http requests for s3 resources with authorization logic.",
-  "main": "S3RequestHandler.js",
+  "main": "Handler.js",
   "repository": "https://github.com/bu-ist/bu-wp-assets-lambda-s3-proxy",
   "author": "wrh@bu.edu",
   "dependencies": {

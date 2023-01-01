@@ -7,6 +7,13 @@ Description: >
 
 # https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/DownloadDistS3AndCustomOrigins.html#concept_lambda_function_url
 
+Parameters:
+
+  Stage:
+    Type: String
+    Default: dev
+    Description: The API Gateway stage name
+
 Resources:
 
   Bucket:
@@ -41,7 +48,7 @@ Resources:
       EndpointConfiguration:
         Type: REGIONAL
       Name: !Sub ${AWS::StackName}-rest-api
-      StageName: dev
+      StageName: !Ref Stage
       DefinitionBody:
         openapi: 3.0.0
         info:
@@ -74,12 +81,13 @@ Resources:
       Description: Receives https originated requests for s3 content and conditionally returns after applying authorization logic.
       Runtime: nodejs14.x
       Architectures: [ x86_64 ]
-      Handler: S3RequestHandler.Authorize
+      Handler: Handler.GetAsset
       CodeUri: src/
+      Timeout: 60
       Environment:
         Variables:
           S3_REGION: !Ref AWS::Region
-          S3_BUCKET: !Ref Bucket          
+          S3_BUCKET: !Ref Bucket
       Events:
         ProxyApiEvent:
           Type: Api
@@ -113,6 +121,10 @@ Outputs:
     Description: Root resource ID of the api gateway
     Value: !GetAtt APIGateway.RootResourceId
 
+  AssetBucketName:
+    Description: The name of the assets bucket
+    Value: !Ref Bucket
+    
   Webpage:
     Description: Webpage with images that target S3 content
-    Value: !Sub https://${APIGateway}.execute-api.us-east-1.amazonaws.com/Stage/index.htm
+    Value: !Sub https://${APIGateway}.execute-api.us-east-1.amazonaws.com/${Stage}/index.htm

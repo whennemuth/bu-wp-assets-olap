@@ -28,18 +28,18 @@ Your browser stands in for apache.
 
 You can run the SAM commands *(validate, package, deploy, delete)* by themselves, or make use of some shortcut script (run.sh) that:
 
-- Includes command parameters dealing with s3, default names, and which cloudformation stack features to use.
+- Includes command parameters dealing with default names and parameters not available for sam toml config files.
 - Auto-populates the assets bucket with content upon creation and empties it so it can be deleted along with other resources made during stack creation.
 
 ```
 # Package the app and send it up to a resolved s3 bucket
-source run.sh package myprofile
+source run.sh package dev
 
 # Package and deploy the app
-source run.sh deploy myprofile
+source run.sh deploy dev
 
 # Delete the app along with ALL created resources (except the code bucket)
-source run.sh delete
+source run.sh delete dev
 ```
 
 ### Demo webpage:

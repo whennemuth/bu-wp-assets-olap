@@ -12,19 +12,24 @@
 
   <body topmargin="100" leftmargin="100">
     <div>
-      <b>https://dz0mp1vyl0.execute-api.us-east-1.amazonaws.com/Stage/dilbert1.gif</b><br>
+      <b>https://${DOMAIN_PREFIX}.execute-api.us-east-1.amazonaws.com/${STAGE}/dilbert1.gif</b><br>
       <i>(This image exists in s3 and should be served up)</i><br>
-      <img src="https://dz0mp1vyl0.execute-api.us-east-1.amazonaws.com/Stage/dilbert1.gif">
+      <img src="https://${DOMAIN_PREFIX}.execute-api.us-east-1.amazonaws.com/${STAGE}/dilbert1.gif">
     </div>
     <div>
-      <b>https://dz0mp1vyl0.execute-api.us-east-1.amazonaws.com/Stage/dilbert2.gif</b><br>
+      <b>https://${DOMAIN_PREFIX}.execute-api.us-east-1.amazonaws.com/${STAGE}/dilbert2.gif</b><br>
       <i>(This image exists in s3 and should be served up)</i><br>
-      <img src="https://dz0mp1vyl0.execute-api.us-east-1.amazonaws.com/Stage/dilbert2.gif">
+      <img src="https://${DOMAIN_PREFIX}.execute-api.us-east-1.amazonaws.com/${STAGE}/dilbert2.gif">
     </div>
     <div>
-      <b>https://dz0mp1vyl0.execute-api.us-east-1.amazonaws.com/Stage/bogus.gif</b><br>
+      <b>https://${DOMAIN_PREFIX}.execute-api.us-east-1.amazonaws.com/${STAGE}/bogus.gif</b><br>
       <i>(No such image in s3. This should blow up)</i><br>
-      <img src="https://dz0mp1vyl0.execute-api.us-east-1.amazonaws.com/Stage/bogus.gif">
+      <img src="https://${DOMAIN_PREFIX}.execute-api.us-east-1.amazonaws.com/${STAGE}/bogus.gif">
+    </div>
+    <div>
+      <b>https://${DOMAIN_PREFIX}.execute-api.us-east-1.amazonaws.com/${STAGE}/big.png</b><br>
+      <i>(This image is 14.2 MB, and will come as a pre-signed s3 url through redirection)</i><br>
+      <img src="https://${DOMAIN_PREFIX}.execute-api.us-east-1.amazonaws.com/${STAGE}/big.png">
     </div>
   </body>
 </html>

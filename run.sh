@@ -1,32 +1,50 @@
 #!/bin/bash
 
-TASK=$1
-STACK_NAME={2:-"bu-wp-assets-lambda-s3-proxy"}
-ASSETS_BUCKET="$STACK_NAME-images"
+TASK="$1"
+STAGE="$2"
 
-case "$TASK" in
-  package)
-    sam package \
-      --region us-east-1 \
-      --resolve-s3 \
-      --force-upload
-    ;;
-  deploy)
-    sam deploy \
-      --stack-name $STACK_NAME \
-      --region us-east-1 \
-      --resolve-s3 \
-      --force-upload \
-      --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
-      --disable-rollback
+run() {
+  case "$TASK" in
+    package)
+      sam package --resolve-s3 --force-upload --config-env $STAGE
+      ;;
+    deploy)
+      sam deploy --resolve-s3 --force-upload --config-env $STAGE \
+      && \
+      loadAssetBucket
+      ;;
+    sync)
+      sam sync --code --resource-id LambdaFunction --config-env $STAGE
+      ;;
+    logs)
+      sam logs --stack-name $(getStackName)
+      ;;
+    delete)
+      emptyAssetBucket && \
+      sam delete --config-env $STAGE
+      ;;
+  esac
+}
 
-    [ $? -eq 0 ] && aws s3 cp assets s3://$ASSETS_BUCKET --recursive
-    ;;
-  delete)
-    aws s3 rm s3://bu-wp-assets-lambda-s3-proxy-images --recursive
-    sam delete --stack-name $STACK_NAME
-    ;;
-esac
+loadAssetBucket() {
+  aws s3 cp assets s3://$(getAssetBucketName) --recursive
+}
 
+emptyAssetBucket() {
+  aws s3 rm s3://$(getAssetBucketName) --recursive
+}
 
+getStackName() {
+  local header='dev\.global\.parameters'
+  grep -E '('$header')|(stack_name)' samconfig.toml \
+    | grep -E -A1 $header \
+    | tail -1 \
+    | grep -oE '"([^"]+)"' \
+    | sed 's/\"//g'
+}
 
+getAssetBucketName() {
+  echo "$(getStackName)-images"
+}
+
+run

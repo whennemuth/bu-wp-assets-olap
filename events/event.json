@@ -1,62 +1,123 @@
 {
-  "body": "{\"message\": \"hello world\"}",
   "resource": "/{proxy+}",
-  "path": "/path/to/resource",
-  "httpMethod": "POST",
-  "isBase64Encoded": false,
-  "queryStringParameters": {
-    "foo": "bar"
-  },
-  "pathParameters": {
-    "proxy": "/path/to/resource"
-  },
-  "stageVariables": {
-    "baz": "qux"
-  },
+  "path": "/big.png",
+  "httpMethod": "GET",
   "headers": {
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-    "Accept-Encoding": "gzip, deflate, sdch",
-    "Accept-Language": "en-US,en;q=0.8",
-    "Cache-Control": "max-age=0",
-    "CloudFront-Forwarded-Proto": "https",
-    "CloudFront-Is-Desktop-Viewer": "true",
-    "CloudFront-Is-Mobile-Viewer": "false",
-    "CloudFront-Is-SmartTV-Viewer": "false",
-    "CloudFront-Is-Tablet-Viewer": "false",
-    "CloudFront-Viewer-Country": "US",
-    "Host": "1234567890.execute-api.us-east-1.amazonaws.com",
-    "Upgrade-Insecure-Requests": "1",
-    "User-Agent": "Custom User Agent String",
-    "Via": "1.1 08f323deadbeefa7af34d5feb414ce27.cloudfront.net (CloudFront)",
-    "X-Amz-Cf-Id": "cDehVQoZnx43VYQb9j2-nvCh-9z396Uhbp027Y2JvkCPNLmGJHqlaA==",
-    "X-Forwarded-For": "127.0.0.1, 127.0.0.2",
-    "X-Forwarded-Port": "443",
-    "X-Forwarded-Proto": "https"
+      "Accept": "image/webp,video/*;q=0.8,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Accept-Language": "en-US,en;q=0.9",
+      "CloudFront-Forwarded-Proto": "https",
+      "CloudFront-Is-Desktop-Viewer": "true",
+      "CloudFront-Is-Mobile-Viewer": "false",
+      "CloudFront-Is-SmartTV-Viewer": "false",
+      "CloudFront-Is-Tablet-Viewer": "false",
+      "CloudFront-Viewer-ASN": "7922",
+      "CloudFront-Viewer-Country": "US",
+      "Host": "5vt2fh4kxc.execute-api.us-east-1.amazonaws.com",
+      "Referer": "https://5vt2fh4kxc.execute-api.us-east-1.amazonaws.com/dev/big.png",
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15",
+      "Via": "2.0 c263afd8fe2db85320f0fb9e8097b6a4.cloudfront.net (CloudFront)",
+      "X-Amz-Cf-Id": "UGmzTjS-XEh7TzNf0RBS0S-JCpHr2qLwdQWHvmYZI5JVVI4EMOPisQ==",
+      "X-Amzn-Trace-Id": "Root=1-63a1f94f-6f23275c76699f4575b60dc0",
+      "X-Forwarded-For": "24.91.118.39, 15.158.52.54",
+      "X-Forwarded-Port": "443",
+      "X-Forwarded-Proto": "https"
   },
+  "multiValueHeaders": {
+      "Accept": [
+          "image/webp,video/*;q=0.8,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5"
+      ],
+      "Accept-Encoding": [
+          "gzip, deflate, br"
+      ],
+      "Accept-Language": [
+          "en-US,en;q=0.9"
+      ],
+      "CloudFront-Forwarded-Proto": [
+          "https"
+      ],
+      "CloudFront-Is-Desktop-Viewer": [
+          "true"
+      ],
+      "CloudFront-Is-Mobile-Viewer": [
+          "false"
+      ],
+      "CloudFront-Is-SmartTV-Viewer": [
+          "false"
+      ],
+      "CloudFront-Is-Tablet-Viewer": [
+          "false"
+      ],
+      "CloudFront-Viewer-ASN": [
+          "7922"
+      ],
+      "CloudFront-Viewer-Country": [
+          "US"
+      ],
+      "Host": [
+          "5vt2fh4kxc.execute-api.us-east-1.amazonaws.com"
+      ],
+      "Referer": [
+          "https://5vt2fh4kxc.execute-api.us-east-1.amazonaws.com/dev/big.png"
+      ],
+      "User-Agent": [
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"
+      ],
+      "Via": [
+          "2.0 c263afd8fe2db85320f0fb9e8097b6a4.cloudfront.net (CloudFront)"
+      ],
+      "X-Amz-Cf-Id": [
+          "UGmzTjS-XEh7TzNf0RBS0S-JCpHr2qLwdQWHvmYZI5JVVI4EMOPisQ=="
+      ],
+      "X-Amzn-Trace-Id": [
+          "Root=1-63a1f94f-6f23275c76699f4575b60dc0"
+      ],
+      "X-Forwarded-For": [
+          "24.91.118.39, 15.158.52.54"
+      ],
+      "X-Forwarded-Port": [
+          "443"
+      ],
+      "X-Forwarded-Proto": [
+          "https"
+      ]
+  },
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "pathParameters": {
+      "proxy": "big.png"
+  },
+  "stageVariables": null,
   "requestContext": {
-    "accountId": "123456789012",
-    "resourceId": "123456",
-    "stage": "prod",
-    "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
-    "requestTime": "09/Apr/2015:12:34:56 +0000",
-    "requestTimeEpoch": 1428582896000,
-    "identity": {
-      "cognitoIdentityPoolId": null,
-      "accountId": null,
-      "cognitoIdentityId": null,
-      "caller": null,
-      "accessKey": null,
-      "sourceIp": "127.0.0.1",
-      "cognitoAuthenticationType": null,
-      "cognitoAuthenticationProvider": null,
-      "userArn": null,
-      "userAgent": "Custom User Agent String",
-      "user": null
-    },
-    "path": "/prod/path/to/resource",
-    "resourcePath": "/{proxy+}",
-    "httpMethod": "POST",
-    "apiId": "1234567890",
-    "protocol": "HTTP/1.1"
-  }
+      "resourceId": "xe1huq",
+      "resourcePath": "/{proxy+}",
+      "httpMethod": "GET",
+      "extendedRequestId": "ddPkZHxnIAMFrNg=",
+      "requestTime": "20/Dec/2022:18:05:03 +0000",
+      "path": "/dev/big.png",
+      "accountId": "770203350335",
+      "protocol": "HTTP/1.1",
+      "stage": "dev",
+      "domainPrefix": "5vt2fh4kxc",
+      "requestTimeEpoch": 1671559503126,
+      "requestId": "dd813db8-2be5-4d22-bc74-eb66f070bf7f",
+      "identity": {
+          "cognitoIdentityPoolId": null,
+          "accountId": null,
+          "cognitoIdentityId": null,
+          "caller": null,
+          "sourceIp": "24.91.118.39",
+          "principalOrgId": null,
+          "accessKey": null,
+          "cognitoAuthenticationType": null,
+          "cognitoAuthenticationProvider": null,
+          "userArn": null,
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15",
+          "user": null
+      },
+      "domainName": "5vt2fh4kxc.execute-api.us-east-1.amazonaws.com",
+      "apiId": "5vt2fh4kxc"
+  },
+  "body": null,
+  "isBase64Encoded": false
 }
