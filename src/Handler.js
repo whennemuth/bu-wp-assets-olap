@@ -24,8 +24,7 @@ exports.GetAsset = async function(event, context) {
     console.log('----------------- CONTEXT -----------------')
     console.log(JSON.stringify(context, null, 2));
     console.log('-------------------------------------------')
-
-
+    
     var asset = await new Asset(
       {
         aws: AWS,

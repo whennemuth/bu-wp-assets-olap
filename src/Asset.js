@@ -1,3 +1,5 @@
+const AssetThumbnail = require('./AssetThumbnail');
+
 /**
  * This object represents an s3 object which is fetched from s3 asynchronously during constuction.
  * 
@@ -15,14 +17,15 @@ module.exports = function(parms) {
 
   const S3 = new parms.aws.S3({region: parms.region});
 
+  this.parms = parms;
   this.assetData = null;
   this.assetError = null;
   this.base64Bytes = null;
   this.contentType = null;
 
   this.log = () => {
-    for(p in parms) {
-      console.log(`${p} = ${parms[p]}`);
+    for(p in this.parms) {
+      console.log(`${p} = ${this.parms[p]}`);
     }
   }
 
@@ -30,6 +33,9 @@ module.exports = function(parms) {
     return assetError;
   }
 
+  /**
+   * @returns The success response containing the base64 encoded s3 object.
+   */
   this.response = () => {
     return {
       statusCode: 200,
@@ -39,13 +45,23 @@ module.exports = function(parms) {
     };
   }
 
+  /**
+   * Get the byte content of the s3 object as potentially modified by the transformer.
+   * @param {*} content The untransformed s3 object
+   * @param {*} error Any error encountered in fetching the object from s3
+   * @returns 
+   */
   this.getContent = (content, error) => {
-    if(parms.transformer) {
-      return parms.transformer.transform(parms, content, error)
+    if(this.parms.transformer) {
+      return this.parms.transformer.transform(this.parms, content, error)
     }
     return content;
   };
 
+  /**
+   * Takes in the content of the s3 object and outputs the base64 equivalent.
+   * @returns The base64 encoded content.
+   */
   this.getBase64 = () => {
     var content = this.getContent(this.assetData, this.assetError);
     if(content.base64) {
@@ -58,9 +74,15 @@ module.exports = function(parms) {
   }
 
   this.getPresignedUrl = expireSeconds => {
-    return S3.getSignedUrl('getObject', { Bucket: parms.bucket, Key: parms.key, Expires: expireSeconds });
+    return S3.getSignedUrl('getObject', { Bucket: this.parms.bucket, Key: this.parms.key, Expires: expireSeconds });
   }
 
+  /**
+   * The s3 object exceeds the response size limit of lambda, so return a redirect to the s3 object url,
+   * presigned to allow direct access.
+   * @param {*} expireSeconds The duration the presigned url is good for.
+   * @returns A presigned url to the s3 object
+   */
   this.getPresignedUrlResponse = expireSeconds => {
     return {
       statusCode: 302,
@@ -68,22 +90,38 @@ module.exports = function(parms) {
     }
   }
 
+  /**
+   * Lambda has a 6MB limit to its response payload.
+   * @returns The encoded s3 object content exceeds the limit.
+   */
   this.isTooBig = () => {
-    return this.base64Bytes > parms.maxBytes;
+    return this.base64Bytes > this.parms.maxBytes;
   }
 
+  /**
+   * Perform the initial acquisition of the s3 object as part of the construction of this object.
+   * A promise is returned to allow for asynchronous instantiation: var asset = await new Asset(parms); 
+   */
   return new Promise (
     (resolve) => {
       try {
         resolve((async () => {
-          await S3.getObject({ Bucket: parms.bucket, Key: parms.key }).promise()
+          await S3.getObject({ Bucket: this.parms.bucket, Key: this.parms.key }).promise()
             .then(data => {
               this.assetData = data;
               this.contentType = data.ContentType;
               this.base64Bytes = 4 * Math.ceil(data.ContentLength / 3.0);        
             })
-            .catch(err => {
+            .catch(async err => {              
               this.assetError = err;
+              var thumbnail = new AssetThumbnail(this);
+              if(thumbnail.requested() && thumbnail.notFound()) {
+                if(await thumbnail.baseImageExists()) {
+                  if(await thumbnail.createAndPutInBucket()) {
+                    return new Asset(this.parms);
+                  }
+                }
+              }
             })
           return this;
         })());

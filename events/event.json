@@ -1,6 +1,6 @@
 {
   "resource": "/{proxy+}",
-  "path": "/big.png",
+  "path": "/bogus.jpg",
   "httpMethod": "GET",
   "headers": {
       "Accept": "image/webp,video/*;q=0.8,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5",
@@ -14,7 +14,7 @@
       "CloudFront-Viewer-ASN": "7922",
       "CloudFront-Viewer-Country": "US",
       "Host": "5vt2fh4kxc.execute-api.us-east-1.amazonaws.com",
-      "Referer": "https://5vt2fh4kxc.execute-api.us-east-1.amazonaws.com/dev/big.png",
+      "Referer": "https://5vt2fh4kxc.execute-api.us-east-1.amazonaws.com/dev/bogus.jpg",
       "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15",
       "Via": "2.0 c263afd8fe2db85320f0fb9e8097b6a4.cloudfront.net (CloudFront)",
       "X-Amz-Cf-Id": "UGmzTjS-XEh7TzNf0RBS0S-JCpHr2qLwdQWHvmYZI5JVVI4EMOPisQ==",
@@ -58,7 +58,7 @@
           "5vt2fh4kxc.execute-api.us-east-1.amazonaws.com"
       ],
       "Referer": [
-          "https://5vt2fh4kxc.execute-api.us-east-1.amazonaws.com/dev/big.png"
+          "https://5vt2fh4kxc.execute-api.us-east-1.amazonaws.com/dev/bogus.jpg"
       ],
       "User-Agent": [
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"
@@ -85,7 +85,7 @@
   "queryStringParameters": null,
   "multiValueQueryStringParameters": null,
   "pathParameters": {
-      "proxy": "big.png"
+      "proxy": "bogus.jpg"
   },
   "stageVariables": null,
   "requestContext": {
@@ -94,7 +94,7 @@
       "httpMethod": "GET",
       "extendedRequestId": "ddPkZHxnIAMFrNg=",
       "requestTime": "20/Dec/2022:18:05:03 +0000",
-      "path": "/dev/big.png",
+      "path": "/dev/bogus.jpg",
       "accountId": "770203350335",
       "protocol": "HTTP/1.1",
       "stage": "dev",
