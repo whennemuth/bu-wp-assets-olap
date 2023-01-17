@@ -3,16 +3,23 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   Create a simple aip gateway that services access to s3 objects with lambda serving an s3 proxy mechanism
 
-# https://stackoverflow.com/questions/47215424/returning-dynamic-content-type-via-aws-api-gateway-and-lambda-function
-
-# https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/DownloadDistS3AndCustomOrigins.html#concept_lambda_function_url
-
 Parameters:
 
-  Stage:
+  EnableCloudWatchMonitoring:
     Type: String
-    Default: dev
-    Description: The API Gateway stage name
+    Description: >
+      Flag to enable CloudWatch request metrics from S3 Object Lambda. This also creates CloudWatch alarms
+      to monitor the request metrics.
+    Default: false
+    AllowedValues: [ true, false ]
+
+  LambdaFunctionPayload:
+    Type: String
+    Default: empty
+    Description: An optional static payload that provides supplemental data to the Lambda function used to transform objects.
+
+Conditions:
+  CustomPayload: !Not [!Equals [!Ref LambdaFunctionPayload, empty]]
 
 Resources:
 
@@ -30,6 +37,25 @@ Resources:
         RestrictPublicBuckets: true
     DeletionPolicy: Delete
 
+BucketPolicy:
+  Type: AWS::S3::BucketPolicy
+  Properties:
+    Bucket: !Ref Bucket
+    PolicyDocument:
+      Version: 2012-10-17
+      Statement:
+        - Action: '*'
+          Effect: Allow
+          Resource:
+          - !GetAtt Bucket.Arn
+          - !Sub
+            - '${bucketARN}/*'
+            - bucketARN: !GetAtt Bucket.Arn
+          Principal:
+            AWS: '*'
+          Condition:
+            StringEquals:
+              's3:DataAccessPointAccount': !Sub ${AWS::AccountId}
 
   LambdaLogsGroup:
     Type: AWS::Logs::LogGroup
@@ -38,41 +64,32 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-s3-proxy
       RetentionInDays: 90
 
-  APIGateway:
-    Type: AWS::Serverless::Api
+  SupportingAccessPoint:
+    Type: AWS::S3::AccessPoint
     Properties:
-      BinaryMediaTypes: 
-        - '*/*'
-      CacheClusterEnabled: false
-      Description: String
-      EndpointConfiguration:
-        Type: REGIONAL
-      Name: !Sub ${AWS::StackName}-rest-api
-      StageName: !Ref Stage
-      DefinitionBody:
-        openapi: 3.0.0
-        info:
-          version: 2016-09-12T17:50:37Z
-          title: ProxyIntegrationWithLambda
-        paths:
-          /{proxy+}:
-            x-amazon-apigateway-any-method:
-              produces:
-                - application/json
-              parameters:
-                - name: proxy
-                  in: path
-                  required: true
-                  type: string
-              responses: {}
-              x-amazon-apigateway-integration:
-                # responses:
-                #   default:
-                #     statusCode: 200
-                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations
-                passthroughBehavior: when_no_match
-                httpMethod: POST
-                type: aws_proxy
+      Bucket: !Ref Bucket
+      Name: !Sub ${AWS::StackName}-s3-ap
+
+  ObjectLambdaAccessPoint:
+    Type: AWS::S3ObjectLambda::AccessPoint
+    Properties: 
+      Name: wp-to-cloud-olap
+      CloudWatchMetricsEnabled:
+        Ref: EnableCloudWatchMonitoring
+      ObjectLambdaConfiguration: 
+        SupportingAccessPoint: !Sub 'arn:aws:s3:${AWS::Region}:${AWS::AccountId}:accesspoint/${SupportingAccessPoint}'
+        TransformationConfigurations: 
+        - Actions: 
+            - GetObject
+          ContentTransformation: 
+            AwsLambda:
+              FunctionArn: !GetAtt LambdaFunction.Arn
+              FunctionPayload: 
+                !If
+                  - CustomPayload
+                  - Ref: LambdaFunctionPayload
+                  - !Sub 
+
 
   LambdaFunction:
     Type: AWS::Serverless::Function
@@ -88,15 +105,9 @@ Resources:
         Variables:
           S3_REGION: !Ref AWS::Region
           S3_BUCKET: !Ref Bucket
-      Events:
-        ProxyApiEvent:
-          Type: Api
-          Properties:
-            Path: /{proxy+}
-            Method: ANY
-            RestApiId:
-              Ref: APIGateway
       Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref S3Bucket
         - Version: 2012-10-17
           Statement:
             - Effect: Allow
@@ -106,25 +117,12 @@ Resources:
                 - !GetAtt LambdaLogsGroup.Arn
             - Effect: Allow
               Action: 
-                - s3:*
-              Resource: 
-                - !Sub arn:aws:s3:::${Bucket}
-                - !Sub arn:aws:s3:::${Bucket}/* 
+                s3-object-lambda:WriteGetObjectResponse
+              Resource:
+                '*'
 
 Outputs:
-
-  ApiGatewayID:
-    Description: The api gateway ID
-    Value: !Ref APIGateway
-
-  ApiGatewayRootResourceID:
-    Description: Root resource ID of the api gateway
-    Value: !GetAtt APIGateway.RootResourceId
 
   AssetBucketName:
     Description: The name of the assets bucket
     Value: !Ref Bucket
-    
-  Webpage:
-    Description: Webpage with images that target S3 content
-    Value: !Sub https://${APIGateway}.execute-api.us-east-1.amazonaws.com/${Stage}/index.htm

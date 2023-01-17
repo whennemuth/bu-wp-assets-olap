@@ -1,4 +1,4 @@
-const AWS = require('aws-sdk');
+const Authenticator = require('./Authenticator');
 const Asset = require('./Asset');
 const BasicContent = require('./transform/BasicContent')
 const ErrorDecorator = require('./transform/ErrorDecorator');
@@ -24,30 +24,40 @@ exports.GetAsset = async function(event, context) {
     console.log('----------------- CONTEXT -----------------')
     console.log(JSON.stringify(context, null, 2));
     console.log('-------------------------------------------')
-    
-    var asset = await new Asset(
-      {
-        aws: AWS,
-        region: process.env.S3_REGION,
-        bucket: process.env.S3_BUCKET,
-        key: event.pathParameters.proxy,
-        apiId: event.requestContext.apiId,
-        stage: event.requestContext.stage,
-        maxBytes: 6000000,
-        transformer: new BasicContent()
-          .decorate(ErrorDecorator)
-          .decorate(IndexPageDecorator)
-          .decorate(ThumbnailDecorator)
+
+    const authenticator = new Authenticator(event, process.env.S3_REGION);
+
+    if(authenticator.shibbolethTokenFound()) {
+
+      this.getObjectKey = () => {
+        var url = event.userRequest.url
+        var host = event.userRequest.headers.Host;
+        return host.replace(url, '').replace(/^http:\/\//i, '');
       }
-    );
 
-    asset.log();
+      var asset = await new Asset(
+        {
+          region: process.env.S3_REGION,
+          bucket: process.env.S3_BUCKET,
+          event: event,
+          ec2Hostname: process.env.EC2_HOSTNAME,
+          key: this.getObjectKey(),
+          transformer: new BasicContent()
+            .decorate(ErrorDecorator)
+            .decorate(IndexPageDecorator)
+            .decorate(ThumbnailDecorator)
+        }
+      );
 
-    if(asset.isTooBig()) {
-      return asset.getPresignedUrlResponse(60);
+      asset.log();
+
+      await asset.flush();
+
+      return asset.response();
     }
-
-    return asset.response();
+    else {
+      return await authenticator.getUnauthorizedResponse();
+    }
   }
   catch(e) {
     console.log(e, e.stack)

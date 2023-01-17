@@ -1,27 +1,29 @@
+const { S3 } = require('aws-sdk');
+const axios = require('axios').default;
 const AssetThumbnail = require('./AssetThumbnail');
 
 /**
  * This object represents an s3 object which is fetched from s3 asynchronously during constuction.
  * 
  * @param {Object} parms A parameter object
- * @param {Object} parms.aws The main aws sdk namespace object
+ * @param {Object} parms.event A getObject event passed into the object lambda handler via its access point.
  * @param {String} parms.region The region where exists the s3 bucket
- * @param {String} parms.apiId The ID of the api gateway to the lambda
- * @param {String} parms.stage The stage of the api gateway to the lambda 
+ * @param {String} parms.ec2Hostname The hostname used that identified the asset being requested before it gets proxied to an access point url.
  * @param {String} parms.key The key of the s3 object
- * @param {Number} parms.maxBytes The size in bytes of a base64-encoded s3 object when it exceeds lambdas response limit.
  * @param {Object} parms.transformer A decoratable object for singling out and modifying certain s3 objects before encoding based on event criteria.
  * @returns 
  */
 module.exports = function(parms) {
 
-  const S3 = new parms.aws.S3({region: parms.region});
+  const s3 = new S3({region: parms.region});
 
   this.parms = parms;
   this.assetData = null;
   this.assetError = null;
-  this.base64Bytes = null;
   this.contentType = null;
+
+  const { getObjectContext } = parms.event;
+  const { outputRoute, outputToken, inputS3Url } = getObjectContext;
 
   this.log = () => {
     for(p in this.parms) {
@@ -34,15 +36,24 @@ module.exports = function(parms) {
   }
 
   /**
-   * @returns The success response containing the base64 encoded s3 object.
+   * @returns A success response.
    */
   this.response = () => {
     return {
-      statusCode: 200,
-      headers: { 'Content-Type': this.contentType },
-      body: this.getBase64(),
-      isBase64Encoded: true
+      statusCode: 200
     };
+  }
+
+  /**
+   * Write the object content back out in the response.
+   * @returns 
+   */
+  this.flush = async () => {
+    return await s3.writeGetObjectResponse({
+      RequestRoute: outputRoute,
+      RequestToken: outputToken,
+      Body: this.assetData,
+    }).promise();
   }
 
   /**
@@ -58,45 +69,6 @@ module.exports = function(parms) {
     return content;
   };
 
-  /**
-   * Takes in the content of the s3 object and outputs the base64 equivalent.
-   * @returns The base64 encoded content.
-   */
-  this.getBase64 = () => {
-    var content = this.getContent(this.assetData, this.assetError);
-    if(content.base64) {
-      if(content.contentType) {
-        this.contentType = content.contentType;
-      }
-      return content.base64;
-    }
-    return new Buffer(content).toString('base64');
-  }
-
-  this.getPresignedUrl = expireSeconds => {
-    return S3.getSignedUrl('getObject', { Bucket: this.parms.bucket, Key: this.parms.key, Expires: expireSeconds });
-  }
-
-  /**
-   * The s3 object exceeds the response size limit of lambda, so return a redirect to the s3 object url,
-   * presigned to allow direct access.
-   * @param {*} expireSeconds The duration the presigned url is good for.
-   * @returns A presigned url to the s3 object
-   */
-  this.getPresignedUrlResponse = expireSeconds => {
-    return {
-      statusCode: 302,
-      headers: { 'Location': this.getPresignedUrl(expireSeconds) }
-    }
-  }
-
-  /**
-   * Lambda has a 6MB limit to its response payload.
-   * @returns The encoded s3 object content exceeds the limit.
-   */
-  this.isTooBig = () => {
-    return this.base64Bytes > this.parms.maxBytes;
-  }
 
   /**
    * Perform the initial acquisition of the s3 object as part of the construction of this object.
@@ -106,11 +78,10 @@ module.exports = function(parms) {
     (resolve) => {
       try {
         resolve((async () => {
-          await S3.getObject({ Bucket: this.parms.bucket, Key: this.parms.key }).promise()
-            .then(data => {
-              this.assetData = data;
-              this.contentType = data.ContentType;
-              this.base64Bytes = 4 * Math.ceil(data.ContentLength / 3.0);        
+
+          await axios.get(inputS3Url, { responseType: "arraybuffer" })
+            .then(presignedResponse => {
+              this.assetData = presignedResponse.data;
             })
             .catch(async err => {              
               this.assetError = err;
@@ -122,7 +93,8 @@ module.exports = function(parms) {
                   }
                 }
               }
-            })
+            });
+
           return this;
         })());
       }

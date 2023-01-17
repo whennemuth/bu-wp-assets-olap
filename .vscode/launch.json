@@ -3,27 +3,6 @@
     {
       "type": "aws-sam",
       "request": "direct-invoke",
-      "name": "API",
-      "aws": {
-        "credentials": "profile:infnprd",
-        "region": "us-east-1"
-      },
-      "invokeTarget": {
-        "target": "api",
-        "templatePath": "${workspaceFolder}/template.yaml",
-        "logicalId": "LambdaFunction"
-      },
-      "api": {
-        "path": "/dilbert1.gif",
-        "httpMethod": "get",
-        "payload": {
-          "json": {}
-        }
-      }
-    },
-    {
-      "type": "aws-sam",
-      "request": "direct-invoke",
       "name": "LAMBDA",
       "aws": {
         "credentials": "profile:infnprd",

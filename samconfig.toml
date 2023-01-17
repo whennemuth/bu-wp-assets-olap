@@ -1,11 +1,10 @@
 version = 0.1
 
 [dev.global.parameters]
-stack_name = "bu-wp-assets-lambda-s3-proxy-dev"
+stack_name = "bu-wp-assets-object-lambda-dev"
 region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
 disable_rollback = true
-parameter_overrides = "Stage=\"dev\""
 image_repositories = []
 tags = "Service=\"webapps\" Function=\"wordpress\" Project=\"bu-wp-to-cloud\" Landscape=\"dev\""
 

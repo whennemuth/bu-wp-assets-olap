@@ -1,6 +1,8 @@
+const { S3 } = require('aws-sdk');
+
 module.exports = function(asset) {
 
-  const S3 = new asset.parms.aws.S3({region: parms.region});
+  const s3 = new S3({region: parms.region});
 
   this.requested = () => {
     return /^.+?__thumbnail\.[^\.]+$/i.test(asset.parms.key);
@@ -31,7 +33,7 @@ module.exports = function(asset) {
       (resolve) => {
         try {
           resolve((async () => {
-            await S3.headObject(params).promise()
+            await s3.headObject(params).promise()
               .then(data => {
                 /*
                 data = {

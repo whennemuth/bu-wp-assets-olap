@@ -1,123 +1,42 @@
 {
-  "resource": "/{proxy+}",
-  "path": "/bogus.jpg",
-  "httpMethod": "GET",
-  "headers": {
-      "Accept": "image/webp,video/*;q=0.8,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5",
-      "Accept-Encoding": "gzip, deflate, br",
-      "Accept-Language": "en-US,en;q=0.9",
-      "CloudFront-Forwarded-Proto": "https",
-      "CloudFront-Is-Desktop-Viewer": "true",
-      "CloudFront-Is-Mobile-Viewer": "false",
-      "CloudFront-Is-SmartTV-Viewer": "false",
-      "CloudFront-Is-Tablet-Viewer": "false",
-      "CloudFront-Viewer-ASN": "7922",
-      "CloudFront-Viewer-Country": "US",
-      "Host": "5vt2fh4kxc.execute-api.us-east-1.amazonaws.com",
-      "Referer": "https://5vt2fh4kxc.execute-api.us-east-1.amazonaws.com/dev/bogus.jpg",
-      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15",
-      "Via": "2.0 c263afd8fe2db85320f0fb9e8097b6a4.cloudfront.net (CloudFront)",
-      "X-Amz-Cf-Id": "UGmzTjS-XEh7TzNf0RBS0S-JCpHr2qLwdQWHvmYZI5JVVI4EMOPisQ==",
-      "X-Amzn-Trace-Id": "Root=1-63a1f94f-6f23275c76699f4575b60dc0",
-      "X-Forwarded-For": "24.91.118.39, 15.158.52.54",
-      "X-Forwarded-Port": "443",
-      "X-Forwarded-Proto": "https"
-  },
-  "multiValueHeaders": {
-      "Accept": [
-          "image/webp,video/*;q=0.8,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5"
-      ],
-      "Accept-Encoding": [
-          "gzip, deflate, br"
-      ],
-      "Accept-Language": [
-          "en-US,en;q=0.9"
-      ],
-      "CloudFront-Forwarded-Proto": [
-          "https"
-      ],
-      "CloudFront-Is-Desktop-Viewer": [
-          "true"
-      ],
-      "CloudFront-Is-Mobile-Viewer": [
-          "false"
-      ],
-      "CloudFront-Is-SmartTV-Viewer": [
-          "false"
-      ],
-      "CloudFront-Is-Tablet-Viewer": [
-          "false"
-      ],
-      "CloudFront-Viewer-ASN": [
-          "7922"
-      ],
-      "CloudFront-Viewer-Country": [
-          "US"
-      ],
-      "Host": [
-          "5vt2fh4kxc.execute-api.us-east-1.amazonaws.com"
-      ],
-      "Referer": [
-          "https://5vt2fh4kxc.execute-api.us-east-1.amazonaws.com/dev/bogus.jpg"
-      ],
-      "User-Agent": [
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"
-      ],
-      "Via": [
-          "2.0 c263afd8fe2db85320f0fb9e8097b6a4.cloudfront.net (CloudFront)"
-      ],
-      "X-Amz-Cf-Id": [
-          "UGmzTjS-XEh7TzNf0RBS0S-JCpHr2qLwdQWHvmYZI5JVVI4EMOPisQ=="
-      ],
-      "X-Amzn-Trace-Id": [
-          "Root=1-63a1f94f-6f23275c76699f4575b60dc0"
-      ],
-      "X-Forwarded-For": [
-          "24.91.118.39, 15.158.52.54"
-      ],
-      "X-Forwarded-Port": [
-          "443"
-      ],
-      "X-Forwarded-Proto": [
-          "https"
-      ]
-  },
-  "queryStringParameters": null,
-  "multiValueQueryStringParameters": null,
-  "pathParameters": {
-      "proxy": "bogus.jpg"
-  },
-  "stageVariables": null,
-  "requestContext": {
-      "resourceId": "xe1huq",
-      "resourcePath": "/{proxy+}",
-      "httpMethod": "GET",
-      "extendedRequestId": "ddPkZHxnIAMFrNg=",
-      "requestTime": "20/Dec/2022:18:05:03 +0000",
-      "path": "/dev/bogus.jpg",
-      "accountId": "770203350335",
-      "protocol": "HTTP/1.1",
-      "stage": "dev",
-      "domainPrefix": "5vt2fh4kxc",
-      "requestTimeEpoch": 1671559503126,
-      "requestId": "dd813db8-2be5-4d22-bc74-eb66f070bf7f",
-      "identity": {
-          "cognitoIdentityPoolId": null,
-          "accountId": null,
-          "cognitoIdentityId": null,
-          "caller": null,
-          "sourceIp": "24.91.118.39",
-          "principalOrgId": null,
-          "accessKey": null,
-          "cognitoAuthenticationType": null,
-          "cognitoAuthenticationProvider": null,
-          "userArn": null,
-          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15",
-          "user": null
-      },
-      "domainName": "5vt2fh4kxc.execute-api.us-east-1.amazonaws.com",
-      "apiId": "5vt2fh4kxc"
-  },
-  "body": null,
-  "isBase64Encoded": false
+    "xAmzRequestId": "requestId",
+    "getObjectContext": {
+        "inputS3Url": "https://my-s3-ap-111122223333.s3-accesspoint.us-east-1.amazonaws.com/example?X-Amz-Security-Token=<snip>",
+        "outputRoute": "io-use1-001",
+        "outputToken": "OutputToken"
+    },
+    "configuration": {
+        "accessPointArn": "arn:aws:s3-object-lambda:us-east-1:111122223333:accesspoint/example-object-lambda-ap",
+        "supportingAccessPointArn": "arn:aws:s3:us-east-1:111122223333:accesspoint/example-ap",
+        "payload": "{}"
+    },
+    "userRequest": {
+        "url": "https://object-lambda-111122223333.s3-object-lambda.us-east-1.amazonaws.com/example",
+        "headers": {
+            "Host": "object-lambda-111122223333.s3-object-lambda.us-east-1.amazonaws.com",
+            "Accept-Encoding": "identity",
+            "X-Amz-Content-SHA256": "e3b0c44298fc1example"
+        }
+    },
+    "userIdentity": {
+        "type": "AssumedRole",
+        "principalId": "principalId",
+        "arn": "arn:aws:sts::111122223333:assumed-role/Admin/example",
+        "accountId": "111122223333",
+        "accessKeyId": "accessKeyId",
+        "sessionContext": {
+            "attributes": {
+                "mfaAuthenticated": "false",
+                "creationDate": "Wed Mar 10 23:41:52 UTC 2021"
+            },
+            "sessionIssuer": {
+                "type": "Role",
+                "principalId": "principalId",
+                "arn": "arn:aws:iam::111122223333:role/Admin",
+                "accountId": "111122223333",
+                "userName": "Admin"
+            }
+        }
+    },
+    "protocolVersion": "1.00"
 }
