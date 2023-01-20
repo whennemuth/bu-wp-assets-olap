@@ -27,7 +27,7 @@
   # sh signer.sh \
   #   task=curl \
   #   object_key=2.jpg
-
+# set -x
 [ -f ./credentials.sh ] && source ./credentials.sh
 [ -f /etc/apache2/credentials.sh ] && source /etc/apache2/credentials.sh
 
@@ -53,6 +53,8 @@ setGlobals() {
   [ -z "$REGION" ] && REGION="us-east-1"
   [ -z "$HOST" ] && HOST="resize-ap-up5a46gsosfky1aymqrgpz9otef9yuse1a-s3alias.${SERVICE}.${REGION}.amazonaws.com"
   [ -z "$OBJECT_KEY" ] && OBJECT_KEY="2.jpg"
+  # Trim off any leading "/"
+  [ "${OBJECT_KEY:0:1}" == '/' ] && OBJECT_KEY=${OBJECT_KEY:1}
 }
 
 hmac_sha256() {
@@ -73,7 +75,7 @@ getCanonicalRequest() {
     canonicalHeaders="${canonicalHeaders}x-amz-security-token:$AWS_SESSION_TOKEN\n"
   fi
   local hashedPayload=$EMPTY_STRING
-  printf "${httpmethod}\n${canonicalURI}\n${canonicalQueryString}\n${canonicalHeaders}\n${SIGNED_HEADERS}\n${hashedPayload}"
+  echo -ne "${httpmethod}\n${canonicalURI}\n${canonicalQueryString}\n${canonicalHeaders}\n${SIGNED_HEADERS}\n${hashedPayload}"
 }
 
 getStringToSign() {
@@ -83,7 +85,7 @@ getStringToSign() {
   local scope="${DATE_STAMP}/${REGION}/${SERVICE}/${REQUEST_TYPE}"
   local canonicalRequest="$(getCanonicalRequest)"
   local canonicalRequestHash="$(sha256 "$canonicalRequest")"
-  printf "${HASH_ALG}\n${TIME_STAMP}\n${scope}\n${canonicalRequestHash}"
+  echo -ne "${HASH_ALG}\n${TIME_STAMP}\n${scope}\n${canonicalRequestHash}"
 }
 
 getSigningKey() {
@@ -91,7 +93,7 @@ getSigningKey() {
   local dateRegionKey=$(hmac_sha256 "hexkey:$dateKey" $REGION)
   local dateRegionServiceKey=$(hmac_sha256 "hexkey:$dateRegionKey" $SERVICE)
   local signingKey=$(hmac_sha256 "hexkey:$dateRegionServiceKey" "aws4_request")
-  printf "$signingKey"
+  echo -ne "$signingKey"
 }
 
 getSignature() {
@@ -103,7 +105,7 @@ getAuthHeader() {
     "$HASH_ALG \
     Credential=${AWS_ACCESS_KEY_ID}/${DATE_STAMP}/${REGION}/${SERVICE}/${REQUEST_TYPE}, \
     SignedHeaders=$SIGNED_HEADERS, \
-    Signature=$(getSignature)"
+    Signature=$(getSignature)" | sed 's/ //g' | sed 's/Credential=/ Credential=/'
 }
 
 # Test the generated signature by using it to download an s3 object with curl.
@@ -128,31 +130,37 @@ doCurl() {
   fi
 }
 
-parseArgs $@
+run() {
+  parseArgs $@
 
-if anyCredentials "$PROFILE" ; then
+  if anyCredentials "$PROFILE" ; then
 
-  setGlobals $@
-  
-  case "$TASK" in
-    auth)
-      # For proper return of value see: https://httpd.apache.org/docs/2.4/rewrite/rewritemap.html#prg
-      auth="$(getAuthHeader)"
-      if [ $? -eq 0 ] || [ -z "$auth" ] ; then
-        # Returned value must be terminated by a newline character.
-        echo "$auth"
-      else
-        # "If there is no corresponding lookup value, the map program should return the four-character string "NULL" to indicate this."
-        echo -ne "NULL"
-      fi
-      ;;
-    curl)
-      doCurl
-      ;;
-  esac
-else
-  echo -ne "NULL"
-fi
+    setGlobals $@
+    
+    case "$TASK" in
+      auth)
+        # For proper return of value see: https://httpd.apache.org/docs/2.4/rewrite/rewritemap.html#prg
+        auth="$(getAuthHeader)"
+        statcode=$?
+        [ "$INCLUDE_TIMESTAMP" == 'true' ] && auth="${TIME_STAMP}|${auth}"
+        if [ $statcode -eq 0 ] || [ -z "$auth" ] ; then
+          # Returned value must be terminated by a newline character.
+          echo "$auth"
+        else
+          # "If there is no corresponding lookup value, the map program should return the four-character string "NULL" to indicate this."
+          echo "ERROR IN signer.sh" >> /tmp/output.log
+          echo -ne "NULL"
+        fi
+        ;;
+      curl)
+        doCurl
+        ;;
+    esac
+  else
+    echo "NO CREDENTIALS" >> /tmp/output.log
+    echo -ne "NULL"
+  fi
+}
 
-
-
+# If the listener is sourcing the script, do nothing (yet), else run the indicated task.
+[ "$1" != 'wait' ] && run $@

@@ -57,6 +57,11 @@ setLocalCredentials() {
       fi
     fi
   done < ~/.aws/credentials
+
+  # In case the credentials file stored the variable names in lowercase, set uppercase counterparts.
+  [ -z "$AWS_ACCESS_KEY_ID" ] && AWS_ACCESS_KEY_ID=$aws_access_key_id
+  [ -z "$AWS_SECRET_ACCESS_KEY" ] && AWS_SECRET_ACCESS_KEY=$aws_secret_access_key
+  [ -z "$AWS_SESSION_TOKEN" ] && AWS_SESSION_TOKEN=$aws_session_token
 }
 
 anyCredentials() {
