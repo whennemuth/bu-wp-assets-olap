@@ -105,6 +105,7 @@ BucketPolicy:
         Variables:
           S3_REGION: !Ref AWS::Region
           S3_BUCKET: !Ref Bucket
+          EC2_HOSTNAME: 'TBD'
       Policies:
         - S3CrudPolicy:
             BucketName: !Ref S3Bucket

@@ -1,0 +1,384 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+
+Description: >
+  This stack creates an ec2 instance that runs a dockerized apache server.
+  Apache serves up responses containing s3 content that are the result of proxying to an s3 access point which is 
+  passed an Authorization header signed per AWS4-HMAC-SHA256 from the output of a "listener" bash script.
+
+Parameters:
+
+  S3BucketName:
+    Description: The name of the s3 bucket this instance will be accessing.
+    Type: String
+    Default: jaydub-s3-object-lambda-s3bucket-15j6ame50rl1h
+
+  S3AccessPointAlias:
+    Description: The access point alias for the s3 bucket this instance will be accessing.
+    Type: String
+    Default: resize-ap-up5a46gsosfky1aymqrgpz9otef9yuse1a-s3alias
+
+  EC2AMI:
+    Description: AMI ID
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+
+  EC2InstanceType:
+    Type: String
+    Description: What type of EC2 instance should be used for hosting?
+    AllowedValues:
+    - t3.micro
+    - t3.small
+    - t3.medium
+    ConstraintDescription: Specified instance type is not within selection list.
+    Default: t3.small
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: The id of the vpc to deploy to.
+    Default: vpc-0290de1785982a52f
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet::Id
+    Description: Public subnet for the publicly addressed ec2 instance.
+    Default: subnet-07afd7c2e54376dd0
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet::Id
+    Description: Public subnet for the publicly addressed ec2 instance.
+    Default: subnet-03034a40da92d6d08    
+
+  GithubOrg:
+    Type: String
+    Description: The name of the github organization/account where source code resides
+    Default: whennemuth
+
+  GithubRepo:
+    Type: String
+    Description: The name of the github repo where source code resides
+    Default: bu-wp-assets-lambda-s3-proxy
+
+  GithubCommit:
+    Type: String
+    Description: The branch/commit of the source code in the github repo
+    Default: master
+
+Resources:
+
+  EC2LogsGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    Properties:
+      LogGroupName: !Sub /aws/ec2/${AWS::StackName}
+      RetentionInDays: 30
+
+  BucketUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Sub ${AWS::StackName}-user
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-user
+
+  AccessKey:
+    Type: AWS::IAM::AccessKey
+    DependsOn: BucketUser
+    Properties: 
+      Status: Active
+      UserName: !Ref BucketUser
+
+  Secret:
+    Type: AWS::SecretsManager::Secret
+    DependsOn: AccessKey
+    Properties: 
+      Name: !Sub ${AWS::StackName}/${BucketUser}/AccessKey
+      Description: !Sub Stores the credentials for the ${BucketUser} IAM principal.
+      SecretString: 
+        !Sub
+          - |
+            {
+              "user": "${user}", 
+              "bucket": "${bucket}",
+              "aws_access_key_id": "${id}",
+              "aws_secret_access_key": "${key}",
+              "aws_region": "${region}"
+            }
+          - user: !Ref BucketUser
+            id: !Ref AccessKey
+            key: !GetAtt AccessKey.SecretAccessKey
+            region: !Ref AWS::Region
+            bucket: !Ref S3BucketName
+      Tags:
+        - Key: Name
+          Value: !Sub ${BucketUser}/AccessKey
+
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Action: sts:AssumeRole
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Policies:
+        - PolicyName: !Sub ${AWS::StackName}-ec2-log-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - logs:*
+                Resource: 
+                  - !GetAtt EC2LogsGroup.Arn
+
+  S3ManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Policy for access to s3 bucket and secrets manager
+      ManagedPolicyName: !Sub ${AWS::StackName}-user-access-policy
+      Roles:
+        - !Ref EC2Role
+      Users:
+        - !Ref BucketUser
+      Path: /
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Resource: 
+            - !Sub arn:aws:s3:::${S3BucketName}
+            - !Sub arn:aws:s3:::${S3BucketName}/*
+          Action: "*"
+        - Effect: Allow
+          Resource: 
+            - !Ref Secret
+          Action:
+            - secretsmanager:GetSecretValue
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub ${AWS::StackName}-ec2-profile
+      Path: "/"
+      Roles:
+      - !Ref EC2Role
+
+  EC2InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub Defines access for the ${AWS::StackName} ec2 instance.
+      GroupName: !Sub ${AWS::StackName}-ec2-sg
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - Description: "HTTP ingress to the EC2 instance"
+          CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+        - Description: "HTTPS ingress to the EC2 instance"
+          CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    DependsOn: EC2LogsGroup
+    Description: EC2 instance that runs a dockerized apache server.
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT15M
+    Properties:
+      ImageId: 
+        !Ref EC2AMI
+      InstanceType:
+        !Ref EC2InstanceType
+      IamInstanceProfile:
+        !Ref EC2InstanceProfile
+      SubnetId: !Ref PublicSubnet1
+      SecurityGroupIds:
+      - !GetAtt EC2InstanceSecurityGroup.GroupId
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-ec2
+      UserData: 
+        "Fn::Base64": !Sub |
+          #!/bin/bash
+
+          startLogging() {
+            /opt/aws/bin/cfn-init \
+              -v \
+              --configsets LoggingConfigSet \
+              --region ${AWS::Region} \
+              --stack ${AWS::StackName} \
+              --resource EC2Instance
+          }
+
+          bootstrap() {
+            yum update -y
+            yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+            yum install -y aws-cfn-bootstrap
+            yum install -y jq
+
+            # Install and run docker
+            amazon-linux-extras install -y docker
+            service docker start
+            usermod -a -G docker ec2-user
+            chkconfig docker on
+            
+            # Implement all the metadata in AWS::CloudFormation::Init
+            /opt/aws/bin/cfn-init \
+              -v \
+              --configsets BootstrapConfigSet \
+              --region ${AWS::Region} \
+              --stack ${AWS::StackName} \
+              --resource EC2Instance
+              
+            # Now that all initialization is done signal success
+            /opt/aws/bin/cfn-signal \
+              -e $? \
+              --region ${AWS::Region} \
+              --stack ${AWS::StackName} \
+              --resource EC2Instance
+          }
+
+          startLogging > /var/log/user-data.log 2>&1
+
+          bootstrap >> /var/log/user-data.log 2>&1
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          LoggingConfigSet:
+            - Logging
+          BootstrapConfigSet:
+            - Bootstrap
+          AllConfigs:
+            - Logging
+            - Bootstrap
+
+        # Install logging first ()    
+        Logging:
+          packages:
+            yum:
+              awslogs: []
+          files:
+            /etc/awslogs/awscli.conf:
+              content: !Sub |
+                [plugins]
+                cwlogs = cwlogs
+                [default]
+                region = ${AWS::Region}
+            /etc/awslogs/awslogs.conf:
+              content: !Sub |
+                [general]
+                state_file = /var/lib/awslogs/agent-state
+                
+                [/var/log/docker]
+                file = /var/log/docker
+                log_group_name = ${EC2LogsGroup}
+                log_stream_name = /var/log/docker
+                datetime_format = %Y-%m-%dT%H:%M:%S.%f
+                
+                [/var/log/cfn-init]
+                file = /var/log/cfn-init.log
+                log_group_name = ${EC2LogsGroup}
+                log_stream_name = /var/log/cfn-init
+                datetime_format = %Y-%m-%d %H:%M:%S,
+                # multi_line_start_pattern = \d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2},\d{3}
+                
+                [/var/log/user-data]
+                file = /var/log/user-data.log
+                log_group_name = ${EC2LogsGroup}
+                log_stream_name = /var/log/user-data
+                datetime_format = %Y-%m-%d %H:%M:%S,
+                # multi_line_start_pattern = \d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2},\d{3}
+          services:
+            sysvinit:
+              awslogsd:
+                enabled: true
+                ensureRunning: true
+                files:
+                - /etc/awslogs/awslogs.conf
+                - /etc/awslogs/awscli.conf
+
+        Bootstrap:
+          files:
+            /etc/cfn/cfn-hup.conf:
+              mode: "000400"
+              owner: root
+              group: root
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
+                # Change interval from default 15 minutes to 5
+                interval=5
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content: !Sub |
+                [cfn-auto-reloader-hook]
+                triggers=post.update
+                path=Resources.EC2Instance.Metadata.AWS::CloudFormation::Init
+                action=/opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource EC2Instance --configsets AllConfigs
+            /object-lambda/sourcecode.tar.gz:
+              source: !Sub https://github.com/${GithubOrg}/${GithubRepo}/tarball/${GithubCommit}
+              mode: "000755"
+              owner: root
+              group: root
+            /object-lambda/docker-startup.sh:
+              content: !Sub |
+                #!/bin/bash
+
+                tar --strip-components=1 -zxvf sourcecode.tar.gz
+                pubhost="$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)"
+                cd docker
+                sed -i 's/object-lambda/'${!pubhost}'/g' default.conf
+                
+                creds="$(aws --region ${AWS::Region} secretsmanager get-secret-value --secret-id ${Secret})"
+
+                sh docker.sh \
+                  "task=deploy" \
+                  "host=${S3AccessPointAlias}" \
+                  "aws_access_key_id=$(echo "${!creds}" | jq -r '.SecretString' | jq -r '.aws_access_key_id')" \
+                  "aws_secret_access_key=$(echo "${!creds}" | jq -r '.SecretString' | jq -r '.aws_secret_access_key')"
+                
+              mode: "000775"
+              owner: root
+              group: root
+          commands:
+            start_docker:
+              cwd: /object-lambda
+              command: !Sub bash docker-startup.sh
+          services:
+            sysvinit:
+              cfn-hup:
+                enabled: true
+                ensureRunning: true
+                files:
+                - /etc/cfn/cfn-hup.conf
+                - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+
+Outputs:
+
+  PublicDnsName:
+    Value:
+      !GetAtt EC2Instance.PublicDnsName
+
+  PublicIP:
+    Value:
+      !GetAtt EC2Instance.PublicIp
+
+  InstanceId:
+    Value:
+      !Ref EC2Instance
+
+
+# aws cloudformation create-stack \
+#   --stack-name object-lambda-test-ec2 \
+#   --on-failure DO_NOTHING \
+#   --template-body "file://./ec2.yaml" \
+#   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND

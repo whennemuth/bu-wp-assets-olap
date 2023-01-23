@@ -14,7 +14,7 @@ RUN apt update && \
 # RUN echo "Hello World!" > /var/www/index.html
 
 # Configure apache
-RUN a2enmod rewrite ssl headers proxy proxy_http rewrite env log_forensic
+RUN a2enmod rewrite ssl headers proxy proxy_http rewrite env
 RUN chown -R www-data:www-data /var/www
 ENV APACHE_RUN_USER www-data
 ENV APACHE_RUN_GROUP www-data
