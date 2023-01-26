@@ -27,6 +27,8 @@ run() {
 
   [ -n "$PROFILE" ] && setLocalCredentials $PROFILE
 
+  [ ! -d logs ] && mkdir logs
+
   if windows ; then
     export MSYS_NO_PATHCONV=1
 
@@ -49,6 +51,7 @@ run() {
       --env-file vars.env \
       -v $(pwd)/hello.html:/var/www/warren/hello.html \
       -v $(pwd)/default.conf:/etc/apache2/sites-enabled/default.conf \
+      -v $(pwd)/logs:/var/log/apache2 \
       bu-wp-assets-object-lambda:latest
 
   else
@@ -59,6 +62,7 @@ run() {
       -p 443:443 \
       -v $(pwd)/hello.html:/var/www/warren/hello.html \
       -v $(pwd)/default.conf:/etc/apache2/sites-enabled/default.conf \
+      -v $(pwd)/logs:/var/log/apache2 \
       -e HOST:$HOST \
       -e AWS_ACCESS_KEY_ID:$AWS_ACCESS_KEY_ID \
       -e AWS_SECRET_ACCESS_KEY:$AWS_SECRET_ACCESS_KEY \

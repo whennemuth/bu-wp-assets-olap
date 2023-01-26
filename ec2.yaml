@@ -329,15 +329,25 @@ Resources:
               mode: "000755"
               owner: root
               group: root
+            /object-lambda/getcode.sh:
+              content: !Sub |
+                #!/bin/bash
+
+                # 1) Untar the docker subdirectory inside the tarball to the current directory.
+                topdir=$(tar -tf sourcecode.tar.gz | head -1 | cut -d'/' -f1)
+                tar --strip-components=2 -zxvf sourcecode.tar.gz $topdir/docker
+
+                # 2) Replace the ServerName value in the apache config with the public hostname of this ec2 instance.
+                pubhost="$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)"
+                sed -i 's/object-lambda/'${!pubhost}'/g' default.conf
+                
+              mode: "000775"
+              owner: root
+              group: root
             /object-lambda/docker-startup.sh:
               content: !Sub |
                 #!/bin/bash
 
-                tar --strip-components=1 -zxvf sourcecode.tar.gz
-                pubhost="$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)"
-                cd docker
-                sed -i 's/object-lambda/'${!pubhost}'/g' default.conf
-                
                 creds="$(aws --region ${AWS::Region} secretsmanager get-secret-value --secret-id ${Secret})"
 
                 sh docker.sh \
@@ -350,6 +360,9 @@ Resources:
               owner: root
               group: root
           commands:
+            get_code:
+              cwd: /object-lambda
+              command: !Sub bash getcode.sh
             start_docker:
               cwd: /object-lambda
               command: !Sub bash docker-startup.sh
