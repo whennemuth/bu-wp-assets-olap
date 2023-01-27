@@ -14,20 +14,24 @@
   # sh signer.sh \
   #   profile=infnprd \
   #   task=curl \
+  #   aws_account_nbr=770203350335 \
+  #   olap=resize-olap \
   #   object_key=2.jpg \
   #   time_stamp=$(date --utc +'%Y%m%dT%H%M000000Z')
   # 
   # ----------------------------------------------------------------
-  #    Export the credentials and invoke default of current timestamp
+  #    Use explicit credentials and invoke default of current timestamp
   # ----------------------------------------------------------------
-  # set -a
-  # aws_access_key_id=[id]
-  # aws_secret_access_key=[key]
-  # aws_session_token=[token]
+  # 
   # sh signer.sh \
   #   task=curl \
+  #   aws_access_key_id=[id] \
+  #   aws_secret_access_key=[key] \
+  #   aws_session_token=[token] \
+  #   aws_account_nbr=770203350335 \
+  #   olap=resize-olap \
   #   object_key=2.jpg
-# set -x
+
 [ -f ./credentials.sh ] && source ./credentials.sh
 [ -f /etc/apache2/credentials.sh ] && source /etc/apache2/credentials.sh
 
@@ -41,20 +45,50 @@ parseArgs() {
   done
 }
 
-setGlobals() {  
+windows() {
+  [ -n "$(ls /c/ 2> /dev/null)" ] && true || false
+}
+
+log() {
+  if [ "$DEBUG" == 'true' ] ; then
+    if windows ; then
+      echo "$(date +'%Y-%m-%d-%H:%M:%S') $@" >> $(pwd)/output.log
+    else
+      echo "$(date +'%Y-%m-%d-%H:%M:%S') $@" >> /var/log/apache2/output.log
+    fi
+  fi
+}
+
+setGlobals() {
+  getHost() {
+    if [ -n "$HOST" ] ; then
+      echo "$HOST"
+    elif [ -n "$OLAP" ] && [ -n "$AWS_ACCOUNT_NBR" ] && [ -n "$REGION" ] ; then
+      # This url follows the convention for REST access to an object lambda access point.
+      echo "${OLAP}-${AWS_ACCOUNT_NBR}.${SERVICE}.${REGION}.amazonaws.com"
+    fi
+  }
   [ -z "$TIME_STAMP" ] && TIME_STAMP="$(date --utc +'%Y%m%dT%H%M%SZ')"
   DATE_STAMP="${TIME_STAMP:0:8}"
-  SERVICE="s3"
+  # SERVICE="s3"
+  SERVICE="s3-object-lambda"
   HASH_ALG='AWS4-HMAC-SHA256'
   REQUEST_TYPE='aws4_request'
   SIGNED_HEADERS="host;x-amz-content-sha256;x-amz-date"
   EMPTY_STRING="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   [ -n "$AWS_SESSION_TOKEN" ] && SIGNED_HEADERS="$SIGNED_HEADERS;x-amz-security-token"
   [ -z "$REGION" ] && REGION="us-east-1"
-  [ -z "$HOST" ] && HOST="resize-ap-up5a46gsosfky1aymqrgpz9otef9yuse1a-s3alias.${SERVICE}.${REGION}.amazonaws.com"
+  [ -z "$HOST" ] && HOST="$(getHost)" 
   [ -z "$OBJECT_KEY" ] && OBJECT_KEY="2.jpg"
   # Trim off any leading "/"
   [ "${OBJECT_KEY:0:1}" == '/' ] && OBJECT_KEY=${OBJECT_KEY:1}
+
+  log "TIME_STAMP=$TIME_STAMP"
+  log "OBJECT_KEY=$OBJECT_KEY"
+  log "HOST=$HOST"
+  log "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID"
+  log "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY"
+  log "AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN"
 }
 
 hmac_sha256() {
@@ -101,11 +135,13 @@ getSignature() {
 }
 
 getAuthHeader() {
-  echo -ne \
+  local authHeader="$(echo -ne \
     "$HASH_ALG \
     Credential=${AWS_ACCESS_KEY_ID}/${DATE_STAMP}/${REGION}/${SERVICE}/${REQUEST_TYPE}, \
     SignedHeaders=$SIGNED_HEADERS, \
-    Signature=$(getSignature)" | sed 's/ //g' | sed 's/Credential=/ Credential=/'
+    Signature=$(getSignature)" | sed 's/ //g' | sed 's/Credential=/ Credential=/')"
+  log "Authorization Header: $authHeader"
+  echo -ne "$authHeader"
 }
 
 # Test the generated signature by using it to download an s3 object with curl.
@@ -148,7 +184,7 @@ run() {
           echo "$auth"
         else
           # "If there is no corresponding lookup value, the map program should return the four-character string "NULL" to indicate this."
-          echo "ERROR IN signer.sh" >> /tmp/output.log
+          log "ERROR IN signer.sh"
           echo -ne "NULL"
         fi
         ;;
@@ -157,7 +193,7 @@ run() {
         ;;
     esac
   else
-    echo "NO CREDENTIALS" >> /tmp/output.log
+    log "NO CREDENTIALS"
     echo -ne "NULL"
   fi
 }

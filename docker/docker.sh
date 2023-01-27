@@ -21,54 +21,63 @@ build() {
 
 run() {
 
-  windows() {
-    [ -n "$(ls /c/ 2> /dev/null)" ] && true || false
-  }
-
   [ -n "$PROFILE" ] && setLocalCredentials $PROFILE
 
   [ ! -d logs ] && mkdir logs
 
-  if windows ; then
-    export MSYS_NO_PATHCONV=1
+  export MSYS_NO_PATHCONV=1
 
-    # STRANGE AND FRUSTRATING BUG: Cannot feed the environment variables separately into the container using -e.
-    # They show up on the container when you run docker inspect, but when you shell into the container 
-    # and run the env command, the only one that shows up is AWS_SESSION_TOKEN, WTF!!!
-    # WORKAROUND: Putting the environment variables into a file and using --env-file.
-    # (Note: This is probably a windows/docker desktop/WSL bug - won't occur on linux and I doubt it would on a mac)
-    echo "#/bin/bash" > vars.env
-    echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> vars.env
-    echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> vars.env
-    echo "AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN" >> vars.env
-    echo "HOST=$HOST" >> vars.env
+  getAcctNbr() {
+    if [ -n "$AWS_ACCOUNT_NBR" ] ; then
+      echo "$AWS_ACCOUNT_NBR"
+    else
+      source $(pwd)/vars.env 2>&1 > /dev/null
+      aws sts get-caller-identity | jq -r '.Account' 2> /dev/null
+    fi
+  }
+  getRegion() {
+    [ -n "$REGION" ] && echo "$REGION" || echo "us-east-1"
+  }
 
-    docker run \
-      -d \
-      --name ol \
-      -p 80:80 \
-      -p 443:443 \
-      --env-file vars.env \
-      -v $(pwd)/hello.html:/var/www/warren/hello.html \
-      -v $(pwd)/default.conf:/etc/apache2/sites-enabled/default.conf \
-      -v $(pwd)/logs:/var/log/apache2 \
-      bu-wp-assets-object-lambda:latest
+  # STRANGE AND FRUSTRATING BUG: Cannot feed the environment variables separately into the container using -e.
+  # They show up on the container when you run docker inspect, but when you shell into the container 
+  # and run the env command, the only one that shows up is AWS_SESSION_TOKEN, WTF!!!
+  # WORKAROUND: Putting the environment variables into a file and using --env-file.
+  # (Note: This is probably a windows/docker desktop/WSL bug - won't occur on linux and I doubt it would on a mac)
+  echo "#/bin/bash" > vars.env
+  echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> vars.env
+  echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> vars.env
+  echo "AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN" >> vars.env
+  echo "AWS_ACCOUNT_NBR=$(getAcctNbr)" >> vars.env
+  echo "REGION=$(getRegion)" >> vars.env
+  echo "OLAP=$OLAP" >> vars.env
 
-  else
-    docker run \
-      -d \
-      --name ol \
-      -p 80:80 \
-      -p 443:443 \
-      -v $(pwd)/hello.html:/var/www/warren/hello.html \
-      -v $(pwd)/default.conf:/etc/apache2/sites-enabled/default.conf \
-      -v $(pwd)/logs:/var/log/apache2 \
-      -e HOST:$HOST \
-      -e AWS_ACCESS_KEY_ID:$AWS_ACCESS_KEY_ID \
-      -e AWS_SECRET_ACCESS_KEY:$AWS_SECRET_ACCESS_KEY \
-      -e AWS_SESSION_TOKEN:$AWS_SESSION_TOKEN \
-      bu-wp-assets-object-lambda:latest
-  fi
+  docker run \
+    -d \
+    --name ol \
+    -p 80:80 \
+    -p 443:443 \
+    --env-file vars.env \
+    -v $(pwd)/hello.html:/var/www/warren/hello.html \
+    -v $(pwd)/default.conf:/etc/apache2/sites-enabled/default.conf \
+    -v $(pwd)/logs:/var/log/apache2 \
+    bu-wp-assets-object-lambda:latest
+
+  # docker run \
+  #   -d \
+  #   --name ol \
+  #   -p 80:80 \
+  #   -p 443:443 \
+  #   -v $(pwd)/hello.html:/var/www/warren/hello.html \
+  #   -v $(pwd)/default.conf:/etc/apache2/sites-enabled/default.conf \
+  #   -v $(pwd)/logs:/var/log/apache2 \
+  #   -e OLAP:$OLAP \
+  #   -e AWS_ACCOUNT_NBR:$AWS_ACCOUNT_NBR \
+  #   -e REGION=$REGION \
+  #   -e AWS_ACCESS_KEY_ID:$AWS_ACCESS_KEY_ID \
+  #   -e AWS_SECRET_ACCESS_KEY:$AWS_SECRET_ACCESS_KEY \
+  #   -e AWS_SESSION_TOKEN:$AWS_SESSION_TOKEN \
+  #   bu-wp-assets-object-lambda:latest
 }
 
 kill() {
@@ -87,4 +96,4 @@ case "$TASK" in
     ;;
 esac
 
-# sh docker.sh task=deploy profile=infnprd host=resize-ap-up5a46gsosfky1aymqrgpz9otef9yuse1a-s3alias.s3.us-east-1.amazonaws.com
+# sh docker.sh task=deploy profile=infnprd olap=resize-olap

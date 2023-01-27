@@ -13,10 +13,10 @@ Parameters:
     Type: String
     Default: jaydub-s3-object-lambda-s3bucket-15j6ame50rl1h
 
-  S3AccessPointAlias:
-    Description: The access point alias for the s3 bucket this instance will be accessing.
+  ObjectLambdaAccessPointName:
+    Description: The object lambda access point name for the s3 bucket this instance will be accessing.
     Type: String
-    Default: resize-ap-up5a46gsosfky1aymqrgpz9otef9yuse1a-s3alias
+    Default: resize-olap
 
   EC2AMI:
     Description: AMI ID
@@ -352,7 +352,7 @@ Resources:
 
                 sh docker.sh \
                   "task=deploy" \
-                  "host=${S3AccessPointAlias}" \
+                  "olap=${ObjectLambdaAccessPointName}" \
                   "aws_access_key_id=$(echo "${!creds}" | jq -r '.SecretString' | jq -r '.aws_access_key_id')" \
                   "aws_secret_access_key=$(echo "${!creds}" | jq -r '.SecretString' | jq -r '.aws_secret_access_key')"
                 
