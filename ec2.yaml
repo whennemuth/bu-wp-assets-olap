@@ -155,6 +155,10 @@ Resources:
           Action: "*"
         - Effect: Allow
           Resource: 
+            - !Sub arn:aws:s3-object-lambda:::accesspoint/${ObjectLambdaAccessPointName}
+          Action: "*"
+        - Effect: Allow
+          Resource: 
             - !Ref Secret
           Action:
             - secretsmanager:GetSecretValue
@@ -339,7 +343,7 @@ Resources:
 
                 # 2) Replace the ServerName value in the apache config with the public hostname of this ec2 instance.
                 pubhost="$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)"
-                sed -i 's/object-lambda/'${!pubhost}'/g' default.conf
+                sed -i 's/local-ol/'${!pubhost}'/g' default.conf
                 
               mode: "000775"
               owner: root
