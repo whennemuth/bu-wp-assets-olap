@@ -97,3 +97,5 @@ case "$TASK" in
 esac
 
 # sh docker.sh task=deploy profile=infnprd olap=resize-olap
+
+# sh docker.sh task=run olap=resize-olap aws_access_key_id=[ID] aws_secret_access_key=[KEY] aws_account_nbr=770203350335

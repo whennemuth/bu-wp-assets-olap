@@ -155,7 +155,8 @@ Resources:
           Action: "*"
         - Effect: Allow
           Resource: 
-            - !Sub arn:aws:s3-object-lambda:::accesspoint/${ObjectLambdaAccessPointName}
+            - !Sub arn:aws:s3-object-lambda:${AWS::Region}:${AWS::AccountId}:accesspoint/${ObjectLambdaAccessPointName}
+            - !Sub arn:aws:s3-object-lambda:${AWS::Region}:${AWS::AccountId}:accesspoint/${ObjectLambdaAccessPointName}/*
           Action: "*"
         - Effect: Allow
           Resource: 
