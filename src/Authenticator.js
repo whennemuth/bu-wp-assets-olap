@@ -6,13 +6,15 @@ module.exports = function(event, region) {
   const { outputRoute, outputToken } = getObjectContext;
   
   this.shibbolethTokenFound = () => {
-    return Object
-      .keys(userRequest.headers)
-      .includes("ShibbolethToken");
+    return true;
+
+    // return Object
+    //   .keys(userRequest.headers)
+    //   .includes("ShibbolethToken");
   }
 
   this.getUnauthorizedResponse = async () => {
-    const S3 = new S3({region: parms.region});
+    const s3 = new S3({region: region});
 
     return await s3.writeGetObjectResponse({
       RequestRoute: outputRoute,

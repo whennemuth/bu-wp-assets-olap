@@ -4,25 +4,39 @@ TASK=${1:-"sync"}
 LANDSCAPE=${2:-"dev"}
 
 run() {
+  build() {
+    sam build --config-env $LANDSCAPE
+  }
+  package() {
+    sam package --force-upload --config-env $LANDSCAPE
+  }
+  deploy() {
+    sam deploy --force-upload --config-env $LANDSCAPE \
+    && \
+    loadAssetBucket
+  }
+  delete() {
+    emptyAssetBucket && \
+    sam delete --no-prompts --config-env $LANDSCAPE --stack-name $(getStackName)
+  }
   case "$TASK" in
+    build)
+      build ;;
     package)
-      sam package --resolve-s3 --force-upload --config-env $LANDSCAPE
-      ;;
+      package ;;
     deploy)
-      sam deploy --resolve-s3 --force-upload --config-env $LANDSCAPE \
-      && \
-      loadAssetBucket
-      ;;
+      build && deploy ;;
+    redeploy)
+      delete && build && deploy ;;
     sync)
+      # sam sync --code --resource-id LambdaFunction --config-env $LANDSCAPE --no-dependency-layer
       sam sync --code --resource-id LambdaFunction --config-env $LANDSCAPE
       ;;
     logs)
       sam logs --stack-name $(getStackName)
       ;;
     delete)
-      emptyAssetBucket && \
-      sam delete --config-env $LANDSCAPE
-      ;;
+      delete ;;
   esac
 }
 
@@ -31,7 +45,7 @@ loadAssetBucket() {
 }
 
 emptyAssetBucket() {
-  aws s3 rm s3://$(getAssetBucketName) --recursive
+  aws s3 rm s3://$(getAssetBucketName) --recursive || true
 }
 
 getStackName() {
@@ -44,7 +58,7 @@ getStackName() {
 }
 
 getAssetBucketName() {
-  echo "$(getStackName)-images"
+  echo "$(getStackName)-assets"
 }
 
 run

@@ -32,12 +32,18 @@ exports.GetAsset = async function(event, context) {
       this.getObjectKey = () => {
         var url = event.userRequest.url
         var host = event.userRequest.headers.Host;
-        return host.replace(url, '').replace(/^http:\/\//i, '');
+        var key = url
+          .replace(host, '')
+          .replace(/^https?:\/\//i, '');
+        if(key.startsWith('/')) {
+          key = key.substring(1);
+        }
+        return key;
       }
 
       var asset = await new Asset(
         {
-          region: process.env.S3_REGION,
+          region: process.env.S3_REGION || 'us-east-1',
           bucket: process.env.S3_BUCKET,
           event: event,
           ec2Hostname: process.env.EC2_HOSTNAME,
@@ -53,7 +59,7 @@ exports.GetAsset = async function(event, context) {
 
       await asset.flush();
 
-      return asset.response();
+      return asset.respond();
     }
     else {
       return await authenticator.getUnauthorizedResponse();

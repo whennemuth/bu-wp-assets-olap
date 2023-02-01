@@ -1,1 +1,10 @@
+.vscode/*
 tests/*
+assets/*
+docker/*
+events/*
+README.md
+*.md
+*.sh
+*.toml
+*.yaml

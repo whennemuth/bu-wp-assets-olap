@@ -1,42 +1,29 @@
 {
-    "xAmzRequestId": "requestId",
-    "getObjectContext": {
-        "inputS3Url": "https://my-s3-ap-111122223333.s3-accesspoint.us-east-1.amazonaws.com/example?X-Amz-Security-Token=<snip>",
-        "outputRoute": "io-use1-001",
-        "outputToken": "OutputToken"
-    },
-    "configuration": {
-        "accessPointArn": "arn:aws:s3-object-lambda:us-east-1:111122223333:accesspoint/example-object-lambda-ap",
-        "supportingAccessPointArn": "arn:aws:s3:us-east-1:111122223333:accesspoint/example-ap",
-        "payload": "{}"
-    },
-    "userRequest": {
-        "url": "https://object-lambda-111122223333.s3-object-lambda.us-east-1.amazonaws.com/example",
-        "headers": {
-            "Host": "object-lambda-111122223333.s3-object-lambda.us-east-1.amazonaws.com",
-            "Accept-Encoding": "identity",
-            "X-Amz-Content-SHA256": "e3b0c44298fc1example"
-        }
-    },
-    "userIdentity": {
-        "type": "AssumedRole",
-        "principalId": "principalId",
-        "arn": "arn:aws:sts::111122223333:assumed-role/Admin/example",
-        "accountId": "111122223333",
-        "accessKeyId": "accessKeyId",
-        "sessionContext": {
-            "attributes": {
-                "mfaAuthenticated": "false",
-                "creationDate": "Wed Mar 10 23:41:52 UTC 2021"
-            },
-            "sessionIssuer": {
-                "type": "Role",
-                "principalId": "principalId",
-                "arn": "arn:aws:iam::111122223333:role/Admin",
-                "accountId": "111122223333",
-                "userName": "Admin"
-            }
-        }
-    },
-    "protocolVersion": "1.00"
+  "xAmzRequestId": "6a85a081-e68b-484c-aa14-7f759a7ece31",
+  "getObjectContext": {
+      "outputRoute": "io-cell002",
+      "outputToken": "AgV4XzAzcaQ50SGRsly2KNRjgopn8173bfJd4iaK3R1GiV4AXwABABVhd3MtY3J5cHRvLXB1YmxpYy1rZXkAREF1VHRMQ2RpdG9nVXp3YmlhbWdPT05PTTZ0aVlaaGpudllmTkNVL0JzMkkwRGVWb2NHVmZHcFQ5Ny93aTBOOHBSQT09AAEAB2F3cy1rbXMAS2Fybjphd3M6a21zOnVzLWVhc3QtMTo0NjU2ODA3NTIzNDE6a2V5LzM0NTg1OWE2LTU5NGMtNDg1Zi1iZjUxLWE4MGUwNTA5MGVlZQC4AQIBAHgEsBRs9Z57I8RSaSqwitnJ0U6vIPqh4626sH3iH4brugEBTNEYiXJgXjktzot0ET15AAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMdSIBsF0bNuBL70qPAgEQgDsiWFuZC1x4bRuii2cd5BV7hlkuW3Ukl1JAFt4WGWIq05abnORJODzOz3cp7AEoDbofdNDFCZZ36mvEywIAABAA4uLm/CfxRUlJEPTP8uN8JIisDEq1E6g1AXIXYECi2GurgGrATkPqwObkqxi9M7/i/////wAAAAEAAAAAAAAAAAAAAAEAAAD9jMSaEjkujkww4kYQnWNTvBP2J+zS3DWvv14pyOLA2kpETuB3X4hsZzDoa7f20w/KsHXDwSXZq5yvu5iOBG5RVXyHW/ck7jGDJbQy6JzpCYtjUben8SdFACRWtIWnotYW0VGU3/ZPaNSO5o3LZpzSZ6YvtUezDBj0xmwTDW5dmV9BK3N1sIgZfMUtin7QaDNIaWrQ9H6Iouzdrav5rVEWDVbPHKAUu2N9xwI6Vgou9dsAPfZKm7fxdrhPMPzCwDseQuW9uRQZS/PwSBqdjx93DbPlXfVol0YdanLqM+NwBD2Lifh0IdJNQu8t9Nyn+G5P/0EX985qbVOl9op7ptNjPwsWXiAALAtMsyMdAhQAZzBlAjEAwhP7fWvaRa0DLuJ2NwMHQ4DjL0E2wtoQr+X2WiiGBpFdEXOIpZEYex6ocWhVOEcMAjA+iT+qNNfHI2bmb8diKC1HwdT8OkC2MFZ3v30dyrLDdNI+G/apN5BVKBX+lSzrQdc=",
+      "inputS3Url": "https://bu-wp-assets-object-lambda-dev-ap-770203350335.s3-accesspoint.us-east-1.amazonaws.com/dilbert1.gif?X-Amz-Security-Token=FwoGZXIvYXdzEEwaDOki6yxfbi3GOy6XrSLKAr70dUztfvgjgvKXCx9GTMu9%2FOp9gXMoOGpu5CJ%2BbXJzFl3kxOryfrwVCZCj4Qr3vGdrjXv8yWoYrpWOrsL7HYz8PjNibn9LzFetMt9fC%2BfvQcFf5NcK4Sy3AkvOF59V%2BDmt2j9dhiS99QBLrt3WiZYM2lVuxJsDSOAEjcFR%2BnH3MXtZ7kADd3r4heJF4r5sZ28%2Fas5H1C5%2B22MfvcELJt1W2Gm31uAYa5xTppdJ2bCXGHvkev%2FQt6ia2%2FS4AjIWT9EbpO3nZWmworSBsoaDiji7vvt2KeNxOaYv5kjkUCs%2FG%2BHGqLssUt7u%2BYEkZDTWyPvzFJQx7AAkEs%2FEH9ui%2FP7cOO2BSRwt9KtPvdyYHgqrLK%2FuvHmdyRoX1bks3P5kWUeO2r4PmIps6KEWWwoa8M%2Fvkr3N2hyH2rkdgotSuALX4xdPUf6aMZshLyjTq%2BeeBjJ67efW5fXjpXcVktUBsLVQt52uu0JhrTyISbekp1QsAZybUFaFvsq32pHbn3wCPYxrhx5nHKSEt8x3GENGy9JHuVPPX92%2Bc8hM6Qg4uktX4ARElBMOY9DQ3Sz9zgvuGdMLfenGMhv3y1wTqkV7DkELjuCH66%2BoTJzi6%2Fw%3D%7CMTY4LjEyMi43OC4xMzk%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230201T030035Z&X-Amz-SignedHeaders=host&X-Amz-Expires=61&X-Amz-Credential=ASIA3GU5SOU7XDPWNFVS%2F20230201%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=61c76f9c83005c6afacc29e1bcd38fd2678ba7bc0ecb8b81ed4ced17e83ab954"
+  },
+  "configuration": {
+      "accessPointArn": "arn:aws:s3-object-lambda:us-east-1:770203350335:accesspoint/bu-wp-assets-object-lambda-dev-olap",
+      "supportingAccessPointArn": "arn:aws:s3:us-east-1:770203350335:accesspoint/bu-wp-assets-object-lambda-dev-ap",
+      "payload": ""
+  },
+  "userRequest": {
+      "url": "https://bu-wp-assets-object-lambda-dev-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com/dilbert1.gif",
+      "headers": {
+          "Accept": "*/*",
+          "Host": "bu-wp-assets-object-lambda-dev-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com",
+          "X-Amz-Content-SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+  },
+  "userIdentity": {
+      "type": "IAMUser",
+      "principalId": "AIDA3GU5SOU7VCYL3PIE4",
+      "arn": "arn:aws:iam::770203350335:user/bu-wp-assets-object-lambda-dev-EC2-6TTGVL7RF7FB-user",
+      "accountId": "770203350335",
+      "accessKeyId": "AKIA3GU5SOU7QFBHOOFP"
+  },
+  "protocolVersion": "1.00"
 }

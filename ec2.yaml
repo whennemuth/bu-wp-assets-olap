@@ -11,12 +11,23 @@ Parameters:
   S3BucketName:
     Description: The name of the s3 bucket this instance will be accessing.
     Type: String
-    Default: jaydub-s3-object-lambda-s3bucket-15j6ame50rl1h
+
+  SupportingAccessPointName:
+    Description: The supporting access point name for the s3 bucket this instance will be accessing.
+    Type: String
 
   ObjectLambdaAccessPointName:
     Description: The object lambda access point name for the s3 bucket this instance will be accessing.
     Type: String
-    Default: resize-olap
+
+  LambdaArn:
+    Description: The arn of the lambda function associated with the olap
+    Type: String
+
+  ElasticIP:
+    Description: An optional public IP to use instead of the PublicDnsName
+    Type: String
+    Default: empty
 
   EC2AMI:
     Description: AMI ID
@@ -62,6 +73,11 @@ Parameters:
     Type: String
     Description: The branch/commit of the source code in the github repo
     Default: master
+
+
+Conditions:
+  UseElasticIP: !Not [!Equals [!Ref ElasticIP, empty]]
+
 
 Resources:
 
@@ -152,6 +168,11 @@ Resources:
           Resource: 
             - !Sub arn:aws:s3:::${S3BucketName}
             - !Sub arn:aws:s3:::${S3BucketName}/*
+          Action: "*"
+        - Effect: Allow
+          Resource: 
+            - !Sub arn:aws:s3:${AWS::Region}:${AWS::AccountId}:accesspoint/${SupportingAccessPointName}
+            - !Sub arn:aws:s3:${AWS::Region}:${AWS::AccountId}:accesspoint/${SupportingAccessPointName}/*
           Action: "*"
         - Effect: Allow
           Resource: 
@@ -343,7 +364,10 @@ Resources:
                 tar --strip-components=2 -zxvf sourcecode.tar.gz $topdir/docker
 
                 # 2) Replace the ServerName value in the apache config with the public hostname of this ec2 instance.
-                pubhost="$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)"
+                pubhost="${ElasticIP}"
+                if [ "${!pubhost}" == 'empty' ] ; then
+                  pubhost="$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)"
+                fi
                 sed -i 's/local-ol/'${!pubhost}'/g' default.conf
                 
               mode: "000775"
@@ -399,4 +423,22 @@ Outputs:
 #   --stack-name object-lambda-test-ec2 \
 #   --on-failure DO_NOTHING \
 #   --template-body "file://./ec2.yaml" \
-#   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
+#   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
+#   --parameters '[
+#       {
+#         "ParameterKey" : "S3BucketName",
+#         "ParameterValue" : "bu-wp-assets-object-lambda-dev-assets"
+#       }
+#       ,{
+#         "ParameterKey" : "SupportingAccessPointName",
+#         "ParameterValue" : "bu-wp-assets-object-lambda-dev-ap"
+#       }
+#       ,{
+#         "ParameterKey" : "ObjectLambdaAccessPointName",
+#         "ParameterValue" : "bu-wp-assets-object-lambda-dev-olap"
+#       }
+#       ,{
+#         "ParameterKey" : "LambdaArn",
+#         "ParameterValue" : "arn:aws:lambda:us-east-1:770203350335:function:bu-wp-assets-object-lambda-dev-s3-proxy"
+#       }
+#     ]'

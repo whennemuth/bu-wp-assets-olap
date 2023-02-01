@@ -24,9 +24,11 @@ ENV APACHE_RUN_DIR /var/www/html
 COPY signer.sh /etc/apache2/
 COPY credentials.sh /etc/apache2/
 COPY listener.sh /etc/apache2/
+COPY favicon.ico /etc/apache2/
 RUN dos2unix /etc/apache2/*.sh && \
-  chmod a+x /etc/apache2/*.sh
-
+  chmod a+x /etc/apache2/*.sh && \
+  chmod a+r /etc/apache2/*ico && \
+  echo "AddType image/x-icon .ico" >> /etc/apache2/apache2.Configure
 EXPOSE 80
 EXPOSE 443
 

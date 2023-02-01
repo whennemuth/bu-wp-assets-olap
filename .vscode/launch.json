@@ -11,14 +11,16 @@
       "invokeTarget": {
         "target": "template",
         "templatePath": "${workspaceFolder}/template.yaml",
-        "logicalId": "LambdaFunction"
+        "logicalId": "LambdaFunction",
       },
       "lambda": {
         "payload": {
           "path": "events/event.json"
         },
         "environmentVariables": {
-          "S3_BUCKET": "bu-wp-assets-lambda-s3-proxy-dev-images"
+          "S3_BUCKET": "bu-wp-assets-object-lambda-dev-assets",
+          "S3_REGION": "us-east-1",
+          "EC2_HOSTNAME": "3.215.250.187"
         }
       }
     }

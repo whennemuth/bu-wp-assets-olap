@@ -6,7 +6,8 @@
   "repository": "https://github.com/bu-ist/bu-wp-assets-lambda-s3-proxy",
   "author": "wrh@bu.edu",
   "dependencies": {
-    "axios": "^0.21.1"
+    "axios": "^0.21.1",
+    "sharp": "^0.30.5"
   },
   "scripts": {
     "test": "mocha tests/unit/"

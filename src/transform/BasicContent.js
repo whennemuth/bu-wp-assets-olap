@@ -15,6 +15,9 @@ module.exports = function() {
   }
 
   this._transform = (parms, data, error) => {
-    return data.Body;
+    if(data) {
+      return data;
+    }
+    throw new Error('Empty or null data in response.');
   }
 }

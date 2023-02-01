@@ -15,21 +15,19 @@ Parameters:
 
   LambdaFunctionPayload:
     Type: String
-    Default: empty
+    Default: ""
     Description: An optional static payload that provides supplemental data to the Lambda function used to transform objects.
 
-Conditions:
-  CustomPayload: !Not [!Equals [!Ref LambdaFunctionPayload, empty]]
 
 Resources:
 
   Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-images
+      BucketName: !Sub ${AWS::StackName}-assets
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-images
+          Value: !Sub ${AWS::StackName}-assets
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -37,25 +35,32 @@ Resources:
         RestrictPublicBuckets: true
     DeletionPolicy: Delete
 
-BucketPolicy:
-  Type: AWS::S3::BucketPolicy
-  Properties:
-    Bucket: !Ref Bucket
-    PolicyDocument:
-      Version: 2012-10-17
-      Statement:
-        - Action: '*'
-          Effect: Allow
-          Resource:
-          - !GetAtt Bucket.Arn
-          - !Sub
-            - '${bucketARN}/*'
-            - bucketARN: !GetAtt Bucket.Arn
-          Principal:
-            AWS: '*'
-          Condition:
-            StringEquals:
-              's3:DataAccessPointAccount': !Sub ${AWS::AccountId}
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref Bucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: '*'
+            Effect: Allow
+            Resource:
+            - !GetAtt Bucket.Arn
+            - !Sub
+              - '${bucketARN}/*'
+              - bucketARN: !GetAtt Bucket.Arn
+            Principal:
+              AWS: '*'
+            Condition:
+              StringEquals:
+                's3:DataAccessPointAccount': !Sub ${AWS::AccountId}
+
+  # Using an EIP for the public addressing of the ec2 instead of simply using the PublicDnsName of the ec2 to avoid
+  # a circular reference between LambdaFunction, ObjectLambdaAccessPoint and EC2 resources.
+  EC2EIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
 
   LambdaLogsGroup:
     Type: AWS::Logs::LogGroup
@@ -64,33 +69,6 @@ BucketPolicy:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-s3-proxy
       RetentionInDays: 90
 
-  SupportingAccessPoint:
-    Type: AWS::S3::AccessPoint
-    Properties:
-      Bucket: !Ref Bucket
-      Name: !Sub ${AWS::StackName}-s3-ap
-
-  ObjectLambdaAccessPoint:
-    Type: AWS::S3ObjectLambda::AccessPoint
-    Properties: 
-      Name: wp-to-cloud-olap
-      CloudWatchMetricsEnabled:
-        Ref: EnableCloudWatchMonitoring
-      ObjectLambdaConfiguration: 
-        SupportingAccessPoint: !Sub 'arn:aws:s3:${AWS::Region}:${AWS::AccountId}:accesspoint/${SupportingAccessPoint}'
-        TransformationConfigurations: 
-        - Actions: 
-            - GetObject
-          ContentTransformation: 
-            AwsLambda:
-              FunctionArn: !GetAtt LambdaFunction.Arn
-              FunctionPayload: 
-                !If
-                  - CustomPayload
-                  - Ref: LambdaFunctionPayload
-                  - !Sub 
-
-
   LambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -98,17 +76,18 @@ BucketPolicy:
       Description: Receives https originated requests for s3 content and conditionally returns after applying authorization logic.
       Runtime: nodejs14.x
       Architectures: [ x86_64 ]
-      Handler: Handler.GetAsset
-      CodeUri: src/
+      CodeUri: ./
+      Handler: src/Handler.GetAsset
       Timeout: 60
       Environment:
         Variables:
           S3_REGION: !Ref AWS::Region
           S3_BUCKET: !Ref Bucket
-          EC2_HOSTNAME: 'TBD'
+          EC2_HOSTNAME: !GetAtt EC2EIP.PublicIp
+          # EC2_HOSTNAME: !GetAtt EC2.Outputs.PublicDnsName
       Policies:
         - S3CrudPolicy:
-            BucketName: !Ref S3Bucket
+            BucketName: !Ref Bucket
         - Version: 2012-10-17
           Statement:
             - Effect: Allow
@@ -122,8 +101,57 @@ BucketPolicy:
               Resource:
                 '*'
 
+  SupportingAccessPoint:
+    Type: AWS::S3::AccessPoint
+    Properties:
+      Bucket: !Ref Bucket
+      Name: !Sub ${AWS::StackName}-ap
+
+  ObjectLambdaAccessPoint:
+    Type: AWS::S3ObjectLambda::AccessPoint
+    Properties: 
+      Name: !Sub ${AWS::StackName}-olap
+      ObjectLambdaConfiguration: 
+        AllowedFeatures:
+          - GetObject-Range
+          - GetObject-PartNumber
+          - HeadObject-Range
+          - HeadObject-PartNumber
+        CloudWatchMetricsEnabled: !Ref EnableCloudWatchMonitoring
+        SupportingAccessPoint: !GetAtt SupportingAccessPoint.Arn
+        TransformationConfigurations: 
+          - Actions: 
+              - GetObject
+            ContentTransformation: 
+              AwsLambda:
+                FunctionArn: !GetAtt LambdaFunction.Arn
+                FunctionPayload: !Ref LambdaFunctionPayload
+
+  EC2:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ./ec2.yaml
+      Tags:
+        Name: !Sub ${AWS::StackName}-ec2
+      TimeoutInMinutes: 30
+      Parameters:
+        S3BucketName: !Ref Bucket
+        ObjectLambdaAccessPointName: !Ref ObjectLambdaAccessPoint
+        ElasticIP: !GetAtt EC2EIP.PublicIp
+        LambdaArn: !GetAtt LambdaFunction.Arn
+
+  EC2EIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId: !GetAtt EC2EIP.AllocationId
+      InstanceId: !GetAtt EC2.Outputs.InstanceId
+
 Outputs:
 
   AssetBucketName:
     Description: The name of the assets bucket
     Value: !Ref Bucket
+
+  ElasticIP:
+    Description: The public elastic ip url for the ec2 instance.
+    Value: !GetAtt EC2EIP.PublicIp

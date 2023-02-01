@@ -2,6 +2,12 @@ const { S3 } = require('aws-sdk');
 const axios = require('axios').default;
 const AssetThumbnail = require('./AssetThumbnail');
 
+String.prototype.equalsIgnoreCase = function (compareString) {
+  if(compareString == null) return false;
+  if(compareString == empty) return false;
+  return this.toUpperCase() === compareString.toUpperCase(); 
+};
+
 /**
  * This object represents an s3 object which is fetched from s3 asynchronously during constuction.
  * 
@@ -16,44 +22,38 @@ const AssetThumbnail = require('./AssetThumbnail');
 module.exports = function(parms) {
 
   const s3 = new S3({region: parms.region});
-
-  this.parms = parms;
-  this.assetData = null;
-  this.assetError = null;
-  this.contentType = null;
-
   const { getObjectContext } = parms.event;
   const { outputRoute, outputToken, inputS3Url } = getObjectContext;
 
-  this.log = () => {
-    for(p in this.parms) {
-      console.log(`${p} = ${this.parms[p]}`);
-    }
-  }
 
-  this.error = () => {
-    return assetError;
+  this.parms = parms;
+
+  this.log = () => {
+    for(p in parms) {
+      console.log(`${p} = ${parms[p]}`);
+    }
   }
 
   /**
    * @returns A success response.
    */
-  this.response = () => {
+  this.respond = () => {
     return {
-      statusCode: 200
+      statusCode: 200,
     };
   }
+
+  this.response = {
+    RequestRoute: outputRoute,
+    RequestToken: outputToken,
+  };
 
   /**
    * Write the object content back out in the response.
    * @returns 
    */
   this.flush = async () => {
-    return await s3.writeGetObjectResponse({
-      RequestRoute: outputRoute,
-      RequestToken: outputToken,
-      Body: this.assetData,
-    }).promise();
+    return await s3.writeGetObjectResponse(this.response).promise();
   }
 
   /**
@@ -63,12 +63,22 @@ module.exports = function(parms) {
    * @returns 
    */
   this.getContent = (content, error) => {
-    if(this.parms.transformer) {
-      return this.parms.transformer.transform(this.parms, content, error)
+    if(parms.transformer) {
+      try {
+        return parms.transformer.transform(parms, content, error);
+      }
+      catch(e) {
+        console.log(`Error transforming content: ${e}`);
+        this.response.StatusCode = 500;
+        this.response.ErrorCode = 'TransformError';
+        this.response.ErrorMessage = `${e.name} - ${e.message}`;
+        return null;
+      }
     }
     return content;
   };
 
+  let asset = this;
 
   /**
    * Perform the initial acquisition of the s3 object as part of the construction of this object.
@@ -76,31 +86,47 @@ module.exports = function(parms) {
    */
   return new Promise (
     (resolve) => {
-      try {
-        resolve((async () => {
-
-          await axios.get(inputS3Url, { responseType: "arraybuffer" })
-            .then(presignedResponse => {
-              this.assetData = presignedResponse.data;
-            })
-            .catch(async err => {              
-              this.assetError = err;
-              var thumbnail = new AssetThumbnail(this);
-              if(thumbnail.requested() && thumbnail.notFound()) {
-                if(await thumbnail.baseImageExists()) {
-                  if(await thumbnail.createAndPutInBucket()) {
-                    return new Asset(this.parms);
-                  }
-                }
+      resolve((async () => {
+        await axios.get(inputS3Url, { responseType: "arraybuffer" })
+          .then(presignedResponse => {
+            console.log(`RESPONSE OK`);
+            asset.response.StatusCode = presignedResponse.status;
+            asset.response.Body = asset.getContent(presignedResponse.data, null);
+            asset.response.ContentType = presignedResponse.headers['content-type'];
+          })
+          .catch(async err => {
+            // If a thumbnail was requested but doesn't exist, so create and return it if the base image exists.
+            let thumbnail = new AssetThumbnail(asset); 
+            if(thumbnail.requested() && thumbnail.notFound()) {
+              if(await thumbnail.baseImageExists()) {
+                await thumbnail.createAndPutInBucket();
+                asset.response.Body = thumbnail.getResizedData();
               }
-            });
+              else {
+                asset.response.StatusCode = 404;
+                asset.response.ErrorCode = "BaseAssetNotFound";
+                asset.response.ErrorMessage = "No such thumbnail and no such base image.";
+              }
+            }
+            else {
+              console.log(`Error in resolved promise: ${err}`);
+              if((new String("false")).equalsIgnoreCase(process.env.ERROR_IMAGE)) {
+                asset.response.StatusCode = err.response.status;
+                asset.response.ErrorCode = err.response.statusText.replace(/\x20/g, '');
+                asset.response.ErrorMessage = encodeURIComponent(err.response.data.toString());
+              }
+              else {
+                asset.response.StatusCode = 200;
+                var errImg = asset.getContent(null, err);
+                asset.response.Body = errImg.buffer();
+                asset.response.ContentType = errImg.contentType;
+              }       
+              // asset.getContent(err.response.data);
+            }
+          });
 
-          return this;
-        })());
-      }
-      catch(err) {
-        throw(err);
-      }      
+        return this;
+      })());
     }
   );
 }

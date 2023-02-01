@@ -3,7 +3,9 @@ module.exports = function(decoratable) {
   this._transform = (parms, data, error) => {
     if(error) {
       return {
-        base64: this.getErrorImage64(),
+        buffer: () => {
+          return Buffer.from(this.getErrorImage64(), "base64");
+        },
         contentType: 'image/jpeg'
       }
     }

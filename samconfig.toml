@@ -2,8 +2,9 @@ version = 0.1
 
 [dev.global.parameters]
 stack_name = "bu-wp-assets-object-lambda-dev"
+s3_bucket = "bu-wp-assets-object-lambda-dev-package"
 region = "us-east-1"
-capabilities = "CAPABILITY_IAM"
+capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
 disable_rollback = true
 image_repositories = []
 tags = "Service=\"webapps\" Function=\"wordpress\" Project=\"bu-wp-to-cloud\" Landscape=\"dev\""
@@ -11,3 +12,6 @@ tags = "Service=\"webapps\" Function=\"wordpress\" Project=\"bu-wp-to-cloud\" La
 [dev.sync.parameters]
 capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
 disable_rollback = true
+
+[dev.delete.parameters]
+no-prompts = true

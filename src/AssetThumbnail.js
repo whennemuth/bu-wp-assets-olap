@@ -2,18 +2,17 @@ const { S3 } = require('aws-sdk');
 
 module.exports = function(asset) {
 
-  const s3 = new S3({region: parms.region});
+  const s3 = new S3({region: asset.parms.region});
+
+  this.data = null;
 
   this.requested = () => {
     return /^.+?__thumbnail\.[^\.]+$/i.test(asset.parms.key);
   }
 
   this.notFound = () => {
-    if(asset.assetError) {
-      if(asset.assetError.code && asset.assetError.code == 'NoSuchKey') {
-        return true;
-      }
-      if(asset.assetError.name && asset.assetError.name == 'NoSuchKey') {
+    if(asset.response.ErrorCode) {
+      if(asset.response.ErrorCode && asset.response.ErrorCode == 'NoSuchKey') {
         return true;
       }
     }
@@ -63,8 +62,15 @@ module.exports = function(asset) {
     );
   }
 
-  this.createAndPutInBucket = async () => {
+  this.getResizedData = async () => {
     var baseImage = this.getBaseImageName();
+    // TODO: Use sharp library to resize the image and return its data.
+    return this.data;
+  }
+
+  this.createAndPutInBucket = async () => {
+    getResizedData();
+    // TODO: complete this.
   }
 
   this.replaceLast = (find, replace, string) => {
