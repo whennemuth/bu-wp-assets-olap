@@ -1,6 +1,0 @@
-vars.env
-vars.default.env
-logs
-logs/*
-output.log
-*.pem
