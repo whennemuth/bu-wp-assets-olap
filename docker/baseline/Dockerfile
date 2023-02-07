@@ -13,9 +13,7 @@ RUN apt update && \
 # Install apache and write hellow world message
 # RUN echo "Hello World!" > /var/www/index.html
 
-# Configure apache
-RUN a2enmod rewrite ssl headers proxy proxy_http rewrite env
-RUN chown -R www-data:www-data /var/www
+# Configure apache environment
 ENV APACHE_RUN_USER www-data
 ENV APACHE_RUN_GROUP www-data
 ENV APACHE_LOG_DIR /var/log/apache2
@@ -25,10 +23,18 @@ COPY signer.sh /etc/apache2/
 COPY credentials.sh /etc/apache2/
 COPY listener.sh /etc/apache2/
 COPY favicon.ico /etc/apache2/
-RUN dos2unix /etc/apache2/*.sh && \
+
+# Fix permissions and windows whitespace on copied content
+RUN \
+  chown -R www-data:www-data /var/www && \
+  dos2unix /etc/apache2/*.sh && \
   chmod a+x /etc/apache2/*.sh && \
   chmod a+r /etc/apache2/*ico && \
   echo "AddType image/x-icon .ico" >> /etc/apache2/apache2.Configure
+
+# Enable apache modules for basic features, proxying and rewriting
+RUN a2enmod rewrite ssl headers proxy proxy_http rewrite env
+
 EXPOSE 80
 EXPOSE 443
 

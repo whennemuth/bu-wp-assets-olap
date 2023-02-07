@@ -1,36 +1,6 @@
 #!/bin/bash
 
-# This script creates a signed AWS API s3 getObject request.
-# Related AWS documentation:
-#   - https://docs.aws.amazon.com/general/latest/gr/create-signed-request.html#create-canonical-request
-#   - https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html
-#   - https://czak.pl/2015/09/15/s3-rest-api-with-curl.html
-
-# EXAMPLES:
-
-  # ----------------------------------------------------------------
-  #    Get creds from profile and pass an explicit timestamp
-  # ----------------------------------------------------------------
-  # sh signer.sh \
-  #   profile=infnprd \
-  #   task=curl \
-  #   aws_account_nbr=770203350335 \
-  #   olap=resize-olap \
-  #   object_key=2.jpg \
-  #   time_stamp=$(date --utc +'%Y%m%dT%H%M000000Z')
-  # 
-  # ----------------------------------------------------------------
-  #    Use explicit credentials and invoke default of current timestamp
-  # ----------------------------------------------------------------
-  # 
-  # sh signer.sh \
-  #   task=curl \
-  #   aws_access_key_id=[id] \
-  #   aws_secret_access_key=[key] \
-  #   aws_session_token=[token] \
-  #   aws_account_nbr=770203350335 \
-  #   olap=resize-olap \
-  #   object_key=2.jpg
+# See signer.md readme file in this directory for background and usage.
 
 [ -f ./credentials.sh ] && source ./credentials.sh
 [ -f /etc/apache2/credentials.sh ] && source /etc/apache2/credentials.sh
