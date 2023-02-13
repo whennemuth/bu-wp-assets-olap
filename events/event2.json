@@ -3,22 +3,22 @@
     "getObjectContext": {
         "outputRoute": "io-cell001",
         "outputToken": "AgV45i1g8ayMpauKOTk/mlG6NcQ8m4KmwCVyJCceRkadVVAAXwABABVhd3MtY3J5cHRvLXB1YmxpYy1rZXkAREE2Uk92MnJVYmFVWWJEMTd6VGVSRm9Eb2hOdStENlhRbmQwdVMzcmdhejcreDVja05NZUJ2b1Z2aFlEMTJ2R0VhQT09AAEAB2F3cy1rbXMAS2Fybjphd3M6a21zOnVzLWVhc3QtMToyNjI5MjMyODMyNzI6a2V5L2ZiOTZkOTVhLWQ0YTYtNGNlZC04MGViLWI5YWFhMDQ3ZWMzZgC4AQIBAHjpENcr8SxDngoLsD9o1+68hm4VjTqAxqeMGjg+KnPzlwHFojlpFwayPwSDR5LcuK4jAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMWKKf3SIxj/NHmaywAgEQgDvZGdLr1Z1GNYNLfEGOWuNBNUyIBkYUFPQ2hGsCdQVnBmB+Su/s8k6Q7Lf/uavGppsn9mCVRjXkbtEqpwIAABAA3WP/owCCJjXOieIHxCVpI+95tY47wKU1MoUZbc0Qrk4sBpEEcIKHprkxLvCMeUSb/////wAAAAEAAAAAAAAAAAAAAAEAAAD+Jx7MswdpB2gKOs+/02tsZvoDhKgxg8dyYEUbGHGc45hOWow7oSkm+iRsc1OgJrDrNtDsxOeQOK+RuIn2GnfDhx9/Ii43wNeprYXHuT6rPbapGBXjY5atxCjt5YhDa8QA3FNljPaORtFHV/txnUcPfBXECB565LXqzMoxPncno5sABsDd+SvkaRB1F5Nw0zQr+5395tnvzW1aGd4JL+7yaB153TYdqCf4a88nKi+05cTZnB5QAX6RjHv8T36PgZDnrE0NBc4y64gFhxr39u8rjLgLeB7ShZo+Xrbk+sD1OkC4l8rhVCloyca6Py4utmcyXQBUYBZXx6NeyR42X87Xi9nRbLJd7uE+N2+yrPjCAGcwZQIwKcV7LZNLvRCqe3w8mHMDxDHDehtb1gbGOynA/QoqOeXmk8rWvwyh11B9/MyxZ3ycAjEA0L6yKQrvou7aVdnUWiWQltTHwc0PdyU02w7aBux33MU7Duzs1Ba1ArFinGGlgzdw",
-        "inputS3Url": "https://bu-wp-assets-object-lambda-dev-ap-770203350335.s3-accesspoint.us-east-1.amazonaws.com/dilbert1.gif?X-Amz-Security-Token=FwoGZXIvYXdzEDYaDLc46pOizhhhQzEz9SLKAnLgaJCmYN8QycoSlrFlg9zW9fMTBkJh1logf%2BCiTR5PaUrRN7yhrmQzQYpOHQuFE0XJDH3M3Ba1Rtz%2BAl6bqCO7lNtARLKAlGfHCIs2FROYib1PIS0zoR%2F1K7dU4DQzO6n4sSBKNgexIByxPO9d5m8EMgNG32bflGGaKghlxijm0Erkszwy0JX6phqdpvhncQs2BkIGEbM4syUyUN8uPqkKoGtxX7v5yT7RruRK5xOcvmMIApN095pE33UjbsG9ufmu6aRZnLV5ONSFTYbg4%2BKioV2xsJ7tuTKTeBmQT%2BwrV6FkuDFlkijpVZssUOLml8HtfRQSe1izgTOdKkC4f9yzCSN7xfj33OprpYYeRa9zmI7%2BJSZw09jlkOTA6iFP4Do4AnnSJPonOP8dVLmfl49oz9hIeQDEeiZi72DsYc3cU1og9D1c6nobvSiJuuKeBjJ6sunuOKylD85eirDCEEREyr5dQypsScCdK58Vcq51Oov%2F%2BecuiZzyjjQqJ%2B4JZdKP0H%2FsJNOvrz8B8BnshthpcR79gbdlZU26k57tF7opUOAlpxdBHlnb%2Fgm15Lc%2Bei3Kcci7cdbRMNVYl67WuTUkzn0v8vSybELu3dY%3D%7CMy4yMTUuMjUwLjE4Nw%3D%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230131T044601Z&X-Amz-SignedHeaders=host&X-Amz-Expires=61&X-Amz-Credential=ASIA3GU5SOU73RGZXQM6%2F20230131%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=fdda9c12c3169b0b67ffd36544a341beabd05d29d031cc7a6f3384e4289e86e7"
+        "inputS3Url": "https://bu-wp-assets-olap-dev-ap-770203350335.s3-accesspoint.us-east-1.amazonaws.com/__restricted/bfenster/dilbert1.gif?X-Amz-Security-Token=FwoGZXIvYXdzEDYaDLc46pOizhhhQzEz9SLKAnLgaJCmYN8QycoSlrFlg9zW9fMTBkJh1logf%2BCiTR5PaUrRN7yhrmQzQYpOHQuFE0XJDH3M3Ba1Rtz%2BAl6bqCO7lNtARLKAlGfHCIs2FROYib1PIS0zoR%2F1K7dU4DQzO6n4sSBKNgexIByxPO9d5m8EMgNG32bflGGaKghlxijm0Erkszwy0JX6phqdpvhncQs2BkIGEbM4syUyUN8uPqkKoGtxX7v5yT7RruRK5xOcvmMIApN095pE33UjbsG9ufmu6aRZnLV5ONSFTYbg4%2BKioV2xsJ7tuTKTeBmQT%2BwrV6FkuDFlkijpVZssUOLml8HtfRQSe1izgTOdKkC4f9yzCSN7xfj33OprpYYeRa9zmI7%2BJSZw09jlkOTA6iFP4Do4AnnSJPonOP8dVLmfl49oz9hIeQDEeiZi72DsYc3cU1og9D1c6nobvSiJuuKeBjJ6sunuOKylD85eirDCEEREyr5dQypsScCdK58Vcq51Oov%2F%2BecuiZzyjjQqJ%2B4JZdKP0H%2FsJNOvrz8B8BnshthpcR79gbdlZU26k57tF7opUOAlpxdBHlnb%2Fgm15Lc%2Bei3Kcci7cdbRMNVYl67WuTUkzn0v8vSybELu3dY%3D%7CMy4yMTUuMjUwLjE4Nw%3D%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230131T044601Z&X-Amz-SignedHeaders=host&X-Amz-Expires=61&X-Amz-Credential=ASIA3GU5SOU73RGZXQM6%2F20230131%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=fdda9c12c3169b0b67ffd36544a341beabd05d29d031cc7a6f3384e4289e86e7"
     },
     "configuration": {
-        "accessPointArn": "arn:aws:s3-object-lambda:us-east-1:770203350335:accesspoint/bu-wp-assets-object-lambda-dev-olap",
-        "supportingAccessPointArn": "arn:aws:s3:us-east-1:770203350335:accesspoint/bu-wp-assets-object-lambda-dev-ap",
+        "accessPointArn": "arn:aws:s3-object-lambda:us-east-1:770203350335:accesspoint/bu-wp-assets-olap-dev-olap",
+        "supportingAccessPointArn": "arn:aws:s3:us-east-1:770203350335:accesspoint/bu-wp-assets-olap-dev-ap",
         "payload": ""
     },
     "userRequest": {
-        "url": "https://bu-wp-assets-object-lambda-dev-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com/dilbert1.gif",
+        "url": "https://bu-wp-assets-olap-dev-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com/__restricted/bfenster/dilbert1.gif",
         "headers": {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
             "X-Forwarded-Host": "3.215.250.187",
             "Connection": "keep-alive",
             "Sec-Fetch-Site": "none",
             "Sec-Fetch-Dest": "document",
-            "Host": "bu-wp-assets-object-lambda-dev-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com",
+            "Host": "bu-wp-assets-olap-dev-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com",
             "Accept-Encoding": "gzip, deflate, br",
             "Sec-Fetch-Mode": "navigate",
             "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Google Chrome\";v=\"109\", \"Chromium\";v=\"109\"",
@@ -35,7 +35,7 @@
     "userIdentity": {
         "type": "IAMUser",
         "principalId": "AIDA3GU5SOU7VCYL3PIE4",
-        "arn": "arn:aws:iam::770203350335:user/bu-wp-assets-object-lambda-dev-EC2-6TTGVL7RF7FB-user",
+        "arn": "arn:aws:iam::770203350335:user/bu-wp-assets-olap-dev-EC2-6TTGVL7RF7FB-user",
         "accountId": "770203350335",
         "accessKeyId": "AKIA3GU5SOU7QFBHOOFP"
     },

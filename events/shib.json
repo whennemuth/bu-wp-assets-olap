@@ -1,0 +1,74 @@
+{
+  "xAmzRequestId": "926a0a44-a4a4-4520-983a-d2893a6e0858",
+  "getObjectContext": {
+      "outputRoute": "io-cell001",
+      "outputToken": "AgV4hJuLmf4NrSNnFTlH64szQuqHecShiGper6ARHGd7a5kAXwABABVhd3MtY3J5cHRvLXB1YmxpYy1rZXkAREFvWGhHbEQ3WkZCS2hCbDRTbHJPWFRVNzVrZUR4d1ZCbGJGaUdpSEF1cmVhZHVWRUlGczRTN2J2cVQrcngvbzRydz09AAEAB2F3cy1rbXMAS2Fybjphd3M6a21zOnVzLWVhc3QtMToyNjI5MjMyODMyNzI6a2V5L2ZiOTZkOTVhLWQ0YTYtNGNlZC04MGViLWI5YWFhMDQ3ZWMzZgC4AQIBAHjAnd9wlYejDzUn4ddpQ167daKJ0WyiVqvSYC605FVONAHSJo3JBGWTWsliG1Sp+u9MAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMfT4Ni4vBGwsg8iK3AgEQgDvMZBEHACqViiUV3EHX5JFFdQFnUNe1sBfVGsJijoHg3OIj2ajA1WsHD+gRE9MbovIbhabcE8qZ3G1+KAIAABAAq1bSV/01dZt+6Cw4DSkkKH2ILZkJuF2Egw49uCxBkejPSTrBHYL1PAMekaJhzndF/////wAAAAEAAAAAAAAAAAAAAAEAAADs2IQw++4Ws7IqaM/LHO0A9VUMyBjYcGTVYNrUGqvjJKEfXb/P5kXE120+duAhPWeaRMlAgD5eqjnu8K5pb1XTOeF+ODlxlmcTZJnM+jXNy2XBK4lHYPfHhxSctBbdKfCMZP0btanoo6vnDZ51ReMcZq8//sg+DvNe5g5ZRCkh4kS8+5i81UhI5bJ/odNFg1jSGuJ5BfLgWmIEO5t8LiVpXCGMqZxh/+aJlOYjKkrYsEfFyoOxzlaMzGm1KWrdYowlydp6oKDJgd1eS4sslXEoSQ/OIlYb+t9J++/apPSrgGAA3LwOiFRSA0VV5dZVFpzt2vYqwfS8s9SL6lbsAGcwZQIxAPjyQ8tcs1/VDelX8Ou1WNEKaXFJxFUt/e2Co7rNH86hchM+JraVsJMQ/xPzaRQimwIwT3BWiMEdfzgU5X/vbO/kiwlOsRFZka6JJUWe53dLr5FWV7EZz2VxL05h5Ee1CQEo",
+      "inputS3Url": "https://bu-wp-assets-olap-dev-ap-770203350335.s3-accesspoint.us-east-1.amazonaws.com/__restricted/wrh/index.htm?X-Amz-Security-Token=FwoGZXIvYXdzECcaDLZ1%2BncZF1HKNRVKtyKTBLgH7%2F1%2B4vp4xyOm%2BrdgOzAPrTT0DpbGvsO58P0oraqb9s6nLIn1oeQUq2MAZKxH86iGuugX5az4IaEbCDDGmQCr06o0O3VAWPEf3VUDG0LVDHyyts1ImvDj7QFMdYLVnl4B5%2BrobcgYxA49BlPfpAWduMSUXVGKLOJQCE%2BaUspCxJ2yY5eNS9jG73XXj6S9AcJTjBZzG8qaZsVweeufKKsH3diUC1%2BeqeKhNKnUKsGkTA07L%2FxHhq7nNBFIUmgDl0SRDDp01jq%2BrDXnBEtJp95cVjf9w6osEsx0NKhzKIkQ%2F5y2Rhf%2BStzOIFq0ZoVtcDX5YkGjesRMnV%2BTG6r26oOMuClxSmUE4sbnm%2BZ0nNKzFnX57M2qTJR7EK7LlQ%2FOOL6WwWHMq9fLy9Ms%2FdytOnCklisNqkSGR8NIqVL%2FsjtS3%2BuMCJQOlVlIWgWD0lHgAttuFARENiCHSpYHLRyckZMCU9neaIkwwklU%2Fv25FjLsOykzcsGkd%2B0QFszV2Ihzvth7DkhLBzAhrqgG79a5ZHZBSn9jnkDsd7u7b1O4neCIM4qlv0Te6P4EBo%2FtXU0pyrazf4QjNgA9sbXZiDpCbauldWFvqquFAbafbvCwDcUVA7magz9JbXE8lvtsJhFEyHDHJ0ZpOtM4C5SAYJhqouSQMo%2Bg7z2kysOXpprtldV7Z4kQhGTNs8jniZZHGyrduFKSXSjBjJafBjKnAWfVn85ct%2FbKRSFBLe953dwg8y2cq2bm5gCP6M9oE0hV0yau47DKKCIa08evdP5ezSVijXastBAxastX944SmkEtQJOVoQ3P8kDtiykHsZztIryx9ek9Ht4eIk0LHz21l4plMFjAqRTVu1ogDruLVZWxeqiGyh0W8ts0s9116fdYSrcxHppULCpEdQH7Kdgoxn9WXW8iBNeg2EDAIU876Id5OoGoeOop%7CNzMuMjM0LjE3Ljk%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230210T053051Z&X-Amz-SignedHeaders=host&X-Amz-Expires=61&X-Amz-Credential=ASIA3GU5SOU76AD3RLTB%2F20230210%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=ba6c0a0f7abd9b8d2e4eb3b7e43c76870c63bca9fd1866006f0d78e3828ae592"
+  },
+  "configuration": {
+      "accessPointArn": "arn:aws:s3-object-lambda:us-east-1:770203350335:accesspoint/bu-wp-assets-olap-dev-olap",
+      "supportingAccessPointArn": "arn:aws:s3:us-east-1:770203350335:accesspoint/bu-wp-assets-olap-dev-ap",
+      "payload": ""
+  },
+  "userRequest": {
+      "url": "https://bu-wp-assets-olap-dev-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com/__restricted/wrh/index.htm",
+      "headers": {
+          "Shib-Handler": "https://warren.kualitest.research.bu.edu/Shibboleth.sso",
+          "Shib-Identity-Provider": "https://shib-test.bu.edu/idp/shibboleth",
+          "Shib-Session-Inactivity": "",
+          "eppn": "wrh@bu.edu",
+          "Sec-Fetch-Dest": "document",
+          "Shib-Authentication-Method": "http://www.duosecurity.com/",
+          "Accept-Encoding": "gzip, deflate, br",
+          "Shib-AuthnContext-Decl": "",
+          "Sec-Fetch-Mode": "navigate",
+          "Shib-Session-Index": "_464179b7c411b91c7d617c1ff0bd9e1f",
+          "buPrincipalNameID": "wrh",
+          "subject-id": "",
+          "Shib-Application-ID": "default",
+          "Upgrade-Insecure-Requests": "1",
+          "affiliation": "",
+          "Shib-Authentication-Instant": "2023-02-10T05:30:50.874Z",
+          "Cookie": "_shibsession_64656661756c7468747470733a2f2f2a2e6b75616c69746573742e72657365617263682e62752e6564752f73686962626f6c657468=_17a1843ea59fcc620f7c88b4fd509253",
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+          "pairwise-id": "",
+          "Referer": "https://shib-test.bu.edu/",
+          "X-Forwarded-Host": "warren.kualitest.research.bu.edu",
+          "Connection": "Keep-Alive",
+          "Sec-Fetch-Site": "same-site",
+          "Host": "bu-wp-assets-olap-dev-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com",
+          "entitlement": "http://iam.bu.edu/sp/amazon-502886588882-CFarchitect;http://iam.bu.edu/sp/amazon-730096353738-InfraMgt;http://iam.bu.edu/sp/amazon-253997709890-CFarchitect;http://iam.bu.edu/sp/amazon-730096353738-CFarchitect;http://iam.bu.edu/sp/amazon-770203350335-InfraMgt;http://iam.bu.edu/sp/amazon-770203350335-webteam;http://iam.bu.edu/hr/OrgUnit/10003827;http://iam.bu.edu/idinfo/83;http://iam.bu.edu/sp/amazon-115619461932-webadmin;http://iam.bu.edu/member/ist;http://iam.bu.edu/hr/OrgUnitParent/10002129;http://iam.bu.edu/sp/amazon-115619461932-CFarchitect;http://iam.bu.edu/sp/amazon-586030668166-InfraMgt;http://iam.bu.edu/sp/amazon-115619461932-InfraMgt;http://iam.bu.edu/sp/amazon-253997709890-InfraMgt;http://iam.bu.edu/sp/amazon-770203350335-CFarchitect;http://iam.bu.edu/sp/amazon-586030668166-CFarchitect;http://iam.bu.edu/sp/amazon-770203350335-webadmin;http://iam.bu.edu/sp/amazon-115619461932-webteam",
+          "Shib-Assertion-Count": "",
+          "REMOTE_USER": "wrh@bu.edu",
+          "Shib-Session-Expires": "1676035849",
+          "persistent-id": "",
+          "Shib-AuthnContext-Class": "http://www.duosecurity.com/",
+          "Accept-Language": "en-US,en;q=0.5",
+          "X-Amz-Content-SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "Shib-Cookie-Name": "",
+          "X-Forwarded-Server": "warren.kualitest.research.bu.edu",
+          "Shib-Session-ID": "_17a1843ea59fcc620f7c88b4fd509253"
+      }
+  },
+  "userIdentity": {
+      "type": "AssumedRole",
+      "principalId": "AROA3GU5SOU7SMTVU2WWV:wrh@bu.edu",
+      "arn": "arn:aws:sts::770203350335:assumed-role/Shibboleth-InfraMgt/wrh@bu.edu",
+      "accountId": "770203350335",
+      "accessKeyId": "ASIA3GU5SOU7U6S5VH4L",
+      "sessionContext": {
+          "attributes": {
+              "mfaAuthenticated": "false",
+              "creationDate": "Thu Feb 09 23:48:17 UTC 2023"
+          },
+          "sessionIssuer": {
+              "type": "Role",
+              "principalId": "AROA3GU5SOU7SMTVU2WWV",
+              "arn": "arn:aws:iam::770203350335:role/Shibboleth-InfraMgt",
+              "accountId": "770203350335",
+              "userName": "Shibboleth-InfraMgt"
+          }
+      }
+  },
+  "protocolVersion": "1.00"
+}

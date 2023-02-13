@@ -2,12 +2,6 @@ const { S3 } = require('aws-sdk');
 const axios = require('axios').default;
 const AssetThumbnail = require('./AssetThumbnail');
 
-String.prototype.equalsIgnoreCase = function (compareString) {
-  if(compareString == null) return false;
-  if(compareString == empty) return false;
-  return this.toUpperCase() === compareString.toUpperCase(); 
-};
-
 /**
  * This object represents an s3 object which is fetched from s3 asynchronously during constuction.
  * 

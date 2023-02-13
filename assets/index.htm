@@ -12,14 +12,9 @@
 
   <body topmargin="100" leftmargin="100">
     <div>
-      <b>https://${HOSTNAME}/dilbert1.gif</b><br>
-      <i>(This image exists in s3 and should be served up)</i><br>
-      <img src="https://${HOSTNAME}/dilbert1.gif">
-    </div>
-    <div>
-      <b>https://${HOSTNAME}/dilbert2.gif</b><br>
-      <i>(This image exists in s3 and should be served up)</i><br>
-      <img src="https://${HOSTNAME}/dilbert2.gif">
+      <b>https://${HOSTNAME}/public/diagram.png</b><br>
+      <i>(This image is not restricted and should be served up to anyone)</i><br>
+      <img src="https://${HOSTNAME}/public/diagram.png">
     </div>
     <div>
       <b>https://${HOSTNAME}/bogus.gif</b><br>
@@ -27,9 +22,19 @@
       <img src="https://${HOSTNAME}/bogus.gif">
     </div>
     <div>
-      <b>https://${HOSTNAME}/big.png</b><br>
-      <i>(This image is 14.2 MB, and will come as a pre-signed s3 url through redirection)</i><br>
-      <img src="https://${HOSTNAME}/big.png">
+      <b>https://${HOSTNAME}/__restricted/bfenster/dilbert1.gif</b><br>
+      <i>(This image exists in s3 and should be served up only to Ben)</i><br>
+      <img src="https://${HOSTNAME}/__restricted/bfenster/dilbert1.gif">
+    </div>
+    <div>
+      <b>https://${HOSTNAME}/__restricted/jaydub/dilbert2.gif</b><br>
+      <i>(This image exists in s3 and should be served up only to Jonathan)</i><br>
+      <img src="https://${HOSTNAME}/__restricted/jaydub/dilbert2.gif">
+    </div>
+    <div>
+      <b>https://${HOSTNAME}/__restricted/dcrews/big.png</b><br>
+      <i>(This image exists in s3 at 14.2 MB, and should be served up only to Danny)</i><br>
+      <img src="https://${HOSTNAME}/__restricted/dcrews/big.png">
     </div>
   </body>
 </html>

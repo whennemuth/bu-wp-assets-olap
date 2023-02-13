@@ -24,10 +24,18 @@ Parameters:
     Description: The arn of the lambda function associated with the olap
     Type: String
 
-  ElasticIP:
+  HostName:
     Description: An optional public IP to use instead of the PublicDnsName
     Type: String
     Default: empty
+
+  Shibboleth:
+    Type: String
+    Description: >
+      Indicates  containerized client that makes requests for s3 content through the access point.
+      Drives an apache proxying choice - use mod_shib and a virtual host that implements a service provider, or not.
+    Default: true
+    AllowedValues: [ true, false ]
 
   EC2AMI:
     Description: AMI ID
@@ -67,16 +75,12 @@ Parameters:
   GithubRepo:
     Type: String
     Description: The name of the github repo where source code resides
-    Default: bu-wp-assets-lambda-s3-proxy
+    Default: bu-wp-assets-olap-client
 
   GithubCommit:
     Type: String
     Description: The branch/commit of the source code in the github repo
     Default: master
-
-
-Conditions:
-  UseElasticIP: !Not [!Equals [!Ref ElasticIP, empty]]
 
 
 Resources:
@@ -171,8 +175,17 @@ Resources:
           Action: "*"
         - Effect: Allow
           Resource: 
+            - !Sub arn:aws:s3:::kuali-conf
+            - !Sub arn:aws:s3:::kuali-conf/*
+          Action: "*"
+        - Effect: Allow
+          Resource: 
             - !Sub arn:aws:s3:${AWS::Region}:${AWS::AccountId}:accesspoint/${SupportingAccessPointName}
             - !Sub arn:aws:s3:${AWS::Region}:${AWS::AccountId}:accesspoint/${SupportingAccessPointName}/*
+          Action: "*"
+        - Effect: Allow
+          Resource: 
+            - !Sub ${LambdaArn}
           Action: "*"
         - Effect: Allow
           Resource: 
@@ -360,27 +373,48 @@ Resources:
                 #!/bin/bash
 
                 # 1) Untar the docker subdirectory inside the tarball to the current directory.
-                topdir=$(tar -tf sourcecode.tar.gz | head -1 | cut -d'/' -f1)
-                tar --strip-components=2 -zxvf sourcecode.tar.gz $topdir/docker
+                component='baseline'
+                shib=${Shibboleth}
+                [ "${!shib}" == 'true' ] && component='shibboleth'
+                # topdir=$(tar -tf sourcecode.tar.gz | head -1 | cut -d'/' -f1)
+                # tar --strip-components=2 -zxvf sourcecode.tar.gz $topdir/${!component}
+                tar --strip-components=1 -zxvf sourcecode.tar.gz
 
                 # 2) Replace the ServerName value in the apache config with the public hostname of this ec2 instance.
-                pubhost="${ElasticIP}"
+                pubhost="${HostName}"
                 if [ "${!pubhost}" == 'empty' ] ; then
                   pubhost="$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)"
                 fi
-                sed -i 's/local-ol/'${!pubhost}'/g' default.conf
+                sed -i 's/local-ol/'${!pubhost}'/g' baseline/default.conf
+
+                # 3) Get the cert & key apache needs and copy the environment variables for a shib-based container to the appropriate subdirectory
+                aws s3 cp s3://kuali-conf/ci/kc/sp-cert.pem ./shibboleth/
+                aws s3 cp s3://kuali-conf/ci/kc/sp-key.pem ./shibboleth/
+                cp shib.env.vars ./shibboleth/vars.default.env
                 
               mode: "000775"
+              owner: root
+              group: root
+            /object-lambda/shib.env.vars:
+              content: !Sub |
+                OLAP=bu-wp-assets-olap-dev-olap
+                SERVER_NAME=${HostName}
+                SP_ENTITY_ID=https://*.kualitest.research.bu.edu/shibboleth
+                IDP_ENTITY_ID=https://shib-test.bu.edu/idp/shibboleth
+                SHIB_SP_KEY=sp-key.pem
+                SHIB_SP_CERT=sp-cert.pem
+              mode: "000755"
               owner: root
               group: root
             /object-lambda/docker-startup.sh:
               content: !Sub |
                 #!/bin/bash
-
+                
                 creds="$(aws --region ${AWS::Region} secretsmanager get-secret-value --secret-id ${Secret})"
 
                 sh docker.sh \
                   "task=deploy" \
+                  "shib=${Shibboleth}" \
                   "olap=${ObjectLambdaAccessPointName}" \
                   "aws_access_key_id=$(echo "${!creds}" | jq -r '.SecretString' | jq -r '.aws_access_key_id')" \
                   "aws_secret_access_key=$(echo "${!creds}" | jq -r '.SecretString' | jq -r '.aws_secret_access_key')"
@@ -420,25 +454,25 @@ Outputs:
 
 
 # aws cloudformation create-stack \
-#   --stack-name object-lambda-test-ec2 \
+#   --stack-name olap-test-ec2 \
 #   --on-failure DO_NOTHING \
 #   --template-body "file://./ec2.yaml" \
 #   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
 #   --parameters '[
 #       {
 #         "ParameterKey" : "S3BucketName",
-#         "ParameterValue" : "bu-wp-assets-object-lambda-dev-assets"
+#         "ParameterValue" : "bu-wp-assets-olap-dev-assets"
 #       }
 #       ,{
 #         "ParameterKey" : "SupportingAccessPointName",
-#         "ParameterValue" : "bu-wp-assets-object-lambda-dev-ap"
+#         "ParameterValue" : "bu-wp-assets-olap-dev-ap"
 #       }
 #       ,{
 #         "ParameterKey" : "ObjectLambdaAccessPointName",
-#         "ParameterValue" : "bu-wp-assets-object-lambda-dev-olap"
+#         "ParameterValue" : "bu-wp-assets-olap-dev-olap"
 #       }
 #       ,{
 #         "ParameterKey" : "LambdaArn",
-#         "ParameterValue" : "arn:aws:lambda:us-east-1:770203350335:function:bu-wp-assets-object-lambda-dev-s3-proxy"
+#         "ParameterValue" : "arn:aws:lambda:us-east-1:770203350335:function:bu-wp-assets-olap-dev-s3-proxy"
 #       }
 #     ]'

@@ -1,9 +1,39 @@
 #!/bin/bash
 
-TASK=${1:-"sync"}
-LANDSCAPE=${2:-"dev"}
+# Parse arguments passed to the script and set them as global variables
+parseArgs() {
+  for nv in $@ ; do
+    [ -z "$(grep '=' <<< $nv)" ] && continue;
+    name="$(echo $nv | cut -d'=' -f1)"
+    value="$(echo $nv | cut -d'=' -f2-)"
+    eval "${name^^}=$value" 2> /dev/null || true
+    if [ "${name^^}" == 'PROFILE' ] ; then
+      export AWS_PROFILE="$value"
+    fi
+  done
+}
+
+dryrun() {
+  [ "${DRYRUN,,}" == 'true' ] && true || false
+}
 
 run() {
+  getStackParms() {
+    local switch='--parameter-overrides'
+    if [ -n "$EC2" ] ; then
+      [ -z "$parms" ] && parms=$switch
+      parms="${parms} ${override} CreateEC2=${EC2}"
+    fi
+    if [ -n "$HOST_NAME" ] ; then
+      [ -z "$parms" ] && parms=$switch
+      parms="${parms}${override} HostName=${HOST_NAME}"
+    fi
+    if [ -n "$SHIB" ] ; then
+      [ -z "$parms" ] && parms=$switch
+      parms="${parms}${override} Shibboleth=${SHIB}"
+    fi
+    echo "$parms"
+  }
   build() {
     sam build --config-env $LANDSCAPE
   }
@@ -11,15 +41,20 @@ run() {
     sam package --force-upload --config-env $LANDSCAPE
   }
   deploy() {
-    sam deploy --force-upload --config-env $LANDSCAPE \
-    && \
+    local cmd="sam deploy --force-upload --config-env $LANDSCAPE $(getStackParms)"
+    echo "$cmd"
+    if dryrun ; then return 0; fi
+    eval "$cmd" && \
     loadAssetBucket
   }
   delete() {
     emptyAssetBucket && \
     sam delete --no-prompts --config-env $LANDSCAPE --stack-name $(getStackName)
   }
-  case "$TASK" in
+
+  parseArgs $@
+
+  case "${TASK:-'sync'}" in
     build)
       build ;;
     package)
@@ -61,4 +96,4 @@ getAssetBucketName() {
   echo "$(getStackName)-assets"
 }
 
-run
+run $@

@@ -1,8 +1,8 @@
 version = 0.1
 
 [dev.global.parameters]
-stack_name = "bu-wp-assets-object-lambda-dev"
-s3_bucket = "bu-wp-assets-object-lambda-dev-package"
+stack_name = "bu-wp-assets-olap-dev"
+s3_bucket = "bu-wp-assets-olap-package"
 region = "us-east-1"
 capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
 disable_rollback = true

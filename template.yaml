@@ -13,11 +13,41 @@ Parameters:
     Default: false
     AllowedValues: [ true, false ]
 
+  CreateEC2:
+    Type: String
+    Description: Indicate if an ec2 instance is to be created to act as an apache proxying server to the olap
+    Default: false
+    AllowedValues: [ true, false ]
+
+  Shibboleth:
+    Type: String
+    Description: >
+      Indicates if the object lambda will require that requests for s3 content include header or token info that proves a successful BU login.
+    Default: false
+    AllowedValues: [ true, false ]
+
+  HostName:
+    Type: String
+    Description: >
+      An apache client that wants to proxy to the olap will have a virtual host configuration with a ServerName set to this domain name or ip address.
+      If the ec2 instance is being created, then its elastic IP will substitute for this value. If not, then you are running an apache host locally 
+      and have set this value as a localhost mapping in your hosts file.
+    Default: empty
+
   LambdaFunctionPayload:
     Type: String
     Default: ""
     Description: An optional static payload that provides supplemental data to the Lambda function used to transform objects.
 
+Conditions:
+  IncludeEC2:
+    !Equals [!Ref CreateEC2, true]
+  DefaultHost:
+    !Equals [!Ref HostName, empty]
+  CustomHostName:
+    !Not [Condition: DefaultHost]
+  IncludeEIP:
+    !And [Condition: IncludeEC2, Condition: DefaultHost]
 
 Resources:
 
@@ -59,6 +89,7 @@ Resources:
   # a circular reference between LambdaFunction, ObjectLambdaAccessPoint and EC2 resources.
   EC2EIP:
     Type: AWS::EC2::EIP
+    Condition: IncludeEIP
     Properties:
       Domain: vpc
 
@@ -74,7 +105,7 @@ Resources:
     Properties:
       FunctionName: !Sub ${AWS::StackName}-s3-proxy
       Description: Receives https originated requests for s3 content and conditionally returns after applying authorization logic.
-      Runtime: nodejs14.x
+      Runtime: nodejs16.x
       Architectures: [ x86_64 ]
       CodeUri: ./
       Handler: src/Handler.GetAsset
@@ -83,8 +114,19 @@ Resources:
         Variables:
           S3_REGION: !Ref AWS::Region
           S3_BUCKET: !Ref Bucket
-          EC2_HOSTNAME: !GetAtt EC2EIP.PublicIp
-          # EC2_HOSTNAME: !GetAtt EC2.Outputs.PublicDnsName
+          SHIBBOLETH: !Ref Shibboleth
+          HOST_NAME: 
+            !If 
+              - CustomHostName
+              - !Ref HostName
+              - !If 
+                  - IncludeEIP
+                  - !GetAtt EC2EIP.PublicIp
+                  - !If 
+                      - IncludeEC2
+                      - "lookup"
+                      - "local-ol"
+              # - !GetAtt EC2.Outputs.PublicDnsName
       Policies:
         - S3CrudPolicy:
             BucketName: !Ref Bucket
@@ -129,6 +171,7 @@ Resources:
 
   EC2:
     Type: AWS::Serverless::Application
+    Condition: IncludeEC2
     Properties:
       Location: ./ec2.yaml
       Tags:
@@ -136,12 +179,19 @@ Resources:
       TimeoutInMinutes: 30
       Parameters:
         S3BucketName: !Ref Bucket
+        SupportingAccessPointName: !Ref SupportingAccessPoint
         ObjectLambdaAccessPointName: !Ref ObjectLambdaAccessPoint
-        ElasticIP: !GetAtt EC2EIP.PublicIp
+        HostName: 
+          !If 
+            - IncludeEIP
+            - !GetAtt EC2EIP.PublicIp
+            - !If [ CustomHostName, !Ref HostName, !Ref AWS::NoValue ]
         LambdaArn: !GetAtt LambdaFunction.Arn
+        Shibboleth: !Ref Shibboleth
 
   EC2EIPAssociation:
     Type: AWS::EC2::EIPAssociation
+    Condition: IncludeEIP
     Properties:
       AllocationId: !GetAtt EC2EIP.AllocationId
       InstanceId: !GetAtt EC2.Outputs.InstanceId
@@ -152,6 +202,20 @@ Outputs:
     Description: The name of the assets bucket
     Value: !Ref Bucket
 
-  ElasticIP:
-    Description: The public elastic ip url for the ec2 instance.
-    Value: !GetAtt EC2EIP.PublicIp
+  HostName:
+    Description: The public ip the lambda function has been told about through an evironment variable.
+    Value: 
+      !If
+        - IncludeEIP
+        - !GetAtt EC2EIP.PublicIp
+        - !If 
+            - CustomHostName
+            - !Ref HostName
+            - !If 
+                - IncludeEIP
+                - !GetAtt EC2EIP.PublicIp
+                - !If 
+                    - IncludeEC2
+                    - "lookup"
+                    - "local-ol"
+

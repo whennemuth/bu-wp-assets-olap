@@ -5,6 +5,15 @@ const ErrorDecorator = require('./transform/ErrorDecorator');
 const IndexPageDecorator = require('./transform/IndexPageDecorator');
 const ThumbnailDecorator = require('./transform/ThumbnailDecorator');
 
+String.prototype.equalsIgnoreCase = function (compareString) {
+  if(compareString == null) return false;
+  if(compareString == undefined) return false;
+  return this.toUpperCase() === compareString.toUpperCase(); 
+};
+String.prototype.isTrue = function () {
+  return this.equalsIgnoreCase('true');
+}
+
 /**
  * This is the lambda function handler. It returns a response containing the base64 encoded s3 object 
  * that the api gateway will decode enroute back to the client. If the encoded object exceeds the size
@@ -25,9 +34,12 @@ exports.GetAsset = async function(event, context) {
     console.log(JSON.stringify(context, null, 2));
     console.log('-------------------------------------------')
 
-    const authenticator = new Authenticator(event, process.env.S3_REGION);
+    const authenticator = new Authenticator(
+        event, 
+        process.env.S3_REGION,
+        process.env.SHIBBOLETH);
 
-    if(authenticator.shibbolethTokenFound()) {
+    if(authenticator.isAuthorized()) {
 
       this.getObjectKey = () => {
         var url = event.userRequest.url
@@ -41,12 +53,14 @@ exports.GetAsset = async function(event, context) {
         return key;
       }
 
+      // TODO: If process.env.HOST_NAME is "lookup", then implement an SDK-based query that does the equivalent of curl -s http://169.254.169.254/latest/meta-data/public-hostname
+
       var asset = await new Asset(
         {
           region: process.env.S3_REGION || 'us-east-1',
           bucket: process.env.S3_BUCKET,
           event: event,
-          ec2Hostname: process.env.EC2_HOSTNAME,
+          ec2Hostname: process.env.HOST_NAME,
           key: this.getObjectKey(),
           transformer: new BasicContent()
             .decorate(ErrorDecorator)

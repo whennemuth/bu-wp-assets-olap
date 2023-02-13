@@ -3,24 +3,48 @@
     {
       "type": "aws-sam",
       "request": "direct-invoke",
-      "name": "LAMBDA",
+      "name": "LAMBDA-CODE",
       "aws": {
         "credentials": "profile:infnprd",
         "region": "us-east-1"
       },
       "invokeTarget": {
-        "target": "template",
-        "templatePath": "${workspaceFolder}/template.yaml",
-        "logicalId": "LambdaFunction",
+        "target": "code",
+        "projectRoot": "${workspaceFolder}/",
+        "lambdaHandler": "src/Handler.GetAsset"
       },
       "lambda": {
+        "runtime": "nodejs16.x",
         "payload": {
           "path": "events/event.json"
         },
         "environmentVariables": {
-          "S3_BUCKET": "bu-wp-assets-object-lambda-dev-assets",
+          "S3_BUCKET": "bu-wp-assets-olap-dev-assets",
           "S3_REGION": "us-east-1",
-          "EC2_HOSTNAME": "3.215.250.187"
+          "HOST_NAME": "3.215.250.187",
+          "SHIBBOLETH": "true"
+        }
+      }
+    },
+    {
+      "type": "aws-sam",
+      "request": "direct-invoke",
+      "name": "LAMBDA-TEMPLATE",
+      "invokeTarget": {
+        "target": "template",
+        "templatePath": "${workspaceFolder}/template.yaml",
+        "logicalId": "LambdaFunction"
+      },
+      "lambda": {
+        "runtime": "nodejs16.x",
+        "payload": {
+          "path": "events/event.json"
+        },
+        "environmentVariables": {
+          "S3_BUCKET": "bu-wp-assets-olap-dev-assets",
+          "S3_REGION": "us-east-1",
+          "HOST_NAME": "3.215.250.187",
+          "SHIBBOLETH": "true"
         }
       }
     }
