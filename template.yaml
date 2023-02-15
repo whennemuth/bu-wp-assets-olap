@@ -100,6 +100,18 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-s3-proxy
       RetentionInDays: 90
 
+  DependencyLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub ${AWS::StackName}-s3-proxy-dependencies
+      Description: !Sub Dependency layer for lambda function ${AWS::StackName}-s3-proxy
+      ContentUri: dependencies/
+      CompatibleRuntimes:
+        - nodejs14.x
+        - nodejs16.x
+      LicenseInfo: 'MIT'
+      RetentionPolicy: Retain
+
   LambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -109,6 +121,8 @@ Resources:
       Architectures: [ x86_64 ]
       CodeUri: ./
       Handler: src/Handler.GetAsset
+      Layers:
+        - !Ref DependencyLayer
       Timeout: 60
       Environment:
         Variables:

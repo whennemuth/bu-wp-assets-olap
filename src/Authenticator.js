@@ -24,7 +24,7 @@ module.exports = function(event, region, shib) {
   
   const shibCookieFound = () => {
     if(headerExists('Cookie')) {
-      return headers['Cookie'].startsWith('_shibsession_');
+      return headers['Cookie'].includes('_shibsession_');
     }
     return false;
   }
@@ -76,12 +76,12 @@ module.exports = function(event, region, shib) {
   this.getUnauthorizedResponse = async () => {
     const s3 = new S3({region: region});
 
-    console.log("NoShibbolethHeadersFound: The request is not authorized")
+    console.log("ShibbolethAuthenticationFailure: Missing or insufficient shibboleth headers")
     return await s3.writeGetObjectResponse({
       RequestRoute: outputRoute,
       RequestToken: outputToken,
       StatusCode: 403,
-      ErrorCode: "NoShibbolethHeadersFound",
+      ErrorCode: "ShibbolethAuthenticationFailure",
       ErrorMessage: "The request is not authorized.",
     }).promise();
   }

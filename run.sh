@@ -65,7 +65,7 @@ run() {
       delete && build && deploy ;;
     sync)
       # sam sync --code --resource-id LambdaFunction --config-env $LANDSCAPE --no-dependency-layer
-      sam sync --code --resource-id LambdaFunction --config-env $LANDSCAPE
+      sam sync --code --resource-id LambdaFunction --config-env $LANDSCAPE --dependency-layer
       ;;
     logs)
       sam logs --stack-name $(getStackName)
