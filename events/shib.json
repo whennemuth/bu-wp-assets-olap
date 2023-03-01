@@ -6,12 +6,12 @@
       "inputS3Url": "https://bu-wp-assets-olap-dev-ap-770203350335.s3-accesspoint.us-east-1.amazonaws.com/__restricted/wrh/index.htm?X-Amz-Security-Token=FwoGZXIvYXdzECcaDLZ1%2BncZF1HKNRVKtyKTBLgH7%2F1%2B4vp4xyOm%2BrdgOzAPrTT0DpbGvsO58P0oraqb9s6nLIn1oeQUq2MAZKxH86iGuugX5az4IaEbCDDGmQCr06o0O3VAWPEf3VUDG0LVDHyyts1ImvDj7QFMdYLVnl4B5%2BrobcgYxA49BlPfpAWduMSUXVGKLOJQCE%2BaUspCxJ2yY5eNS9jG73XXj6S9AcJTjBZzG8qaZsVweeufKKsH3diUC1%2BeqeKhNKnUKsGkTA07L%2FxHhq7nNBFIUmgDl0SRDDp01jq%2BrDXnBEtJp95cVjf9w6osEsx0NKhzKIkQ%2F5y2Rhf%2BStzOIFq0ZoVtcDX5YkGjesRMnV%2BTG6r26oOMuClxSmUE4sbnm%2BZ0nNKzFnX57M2qTJR7EK7LlQ%2FOOL6WwWHMq9fLy9Ms%2FdytOnCklisNqkSGR8NIqVL%2FsjtS3%2BuMCJQOlVlIWgWD0lHgAttuFARENiCHSpYHLRyckZMCU9neaIkwwklU%2Fv25FjLsOykzcsGkd%2B0QFszV2Ihzvth7DkhLBzAhrqgG79a5ZHZBSn9jnkDsd7u7b1O4neCIM4qlv0Te6P4EBo%2FtXU0pyrazf4QjNgA9sbXZiDpCbauldWFvqquFAbafbvCwDcUVA7magz9JbXE8lvtsJhFEyHDHJ0ZpOtM4C5SAYJhqouSQMo%2Bg7z2kysOXpprtldV7Z4kQhGTNs8jniZZHGyrduFKSXSjBjJafBjKnAWfVn85ct%2FbKRSFBLe953dwg8y2cq2bm5gCP6M9oE0hV0yau47DKKCIa08evdP5ezSVijXastBAxastX944SmkEtQJOVoQ3P8kDtiykHsZztIryx9ek9Ht4eIk0LHz21l4plMFjAqRTVu1ogDruLVZWxeqiGyh0W8ts0s9116fdYSrcxHppULCpEdQH7Kdgoxn9WXW8iBNeg2EDAIU876Id5OoGoeOop%7CNzMuMjM0LjE3Ljk%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230210T053051Z&X-Amz-SignedHeaders=host&X-Amz-Expires=61&X-Amz-Credential=ASIA3GU5SOU76AD3RLTB%2F20230210%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=ba6c0a0f7abd9b8d2e4eb3b7e43c76870c63bca9fd1866006f0d78e3828ae592"
   },
   "configuration": {
-      "accessPointArn": "arn:aws:s3-object-lambda:us-east-1:770203350335:accesspoint/bu-wp-assets-olap-dev-olap",
+      "accessPointArn": "arn:aws:s3-object-lambda:us-east-1:770203350335:accesspoint/bu-wp-assets-olap-olap",
       "supportingAccessPointArn": "arn:aws:s3:us-east-1:770203350335:accesspoint/bu-wp-assets-olap-dev-ap",
       "payload": ""
   },
   "userRequest": {
-      "url": "https://bu-wp-assets-olap-dev-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com/__restricted/wrh/index.htm",
+      "url": "https://bu-wp-assets-olap-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com/__restricted/wrh/index.htm",
       "headers": {
           "Shib-Handler": "https://warren.kualitest.research.bu.edu/Shibboleth.sso",
           "Shib-Identity-Provider": "https://shib-test.bu.edu/idp/shibboleth",
@@ -36,7 +36,7 @@
           "X-Forwarded-Host": "warren.kualitest.research.bu.edu",
           "Connection": "Keep-Alive",
           "Sec-Fetch-Site": "same-site",
-          "Host": "bu-wp-assets-olap-dev-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com",
+          "Host": "bu-wp-assets-olap-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com",
           "entitlement": "http://iam.bu.edu/sp/amazon-502886588882-CFarchitect;http://iam.bu.edu/sp/amazon-730096353738-InfraMgt;http://iam.bu.edu/sp/amazon-253997709890-CFarchitect;http://iam.bu.edu/sp/amazon-730096353738-CFarchitect;http://iam.bu.edu/sp/amazon-770203350335-InfraMgt;http://iam.bu.edu/sp/amazon-770203350335-webteam;http://iam.bu.edu/hr/OrgUnit/10003827;http://iam.bu.edu/idinfo/83;http://iam.bu.edu/sp/amazon-115619461932-webadmin;http://iam.bu.edu/member/ist;http://iam.bu.edu/hr/OrgUnitParent/10002129;http://iam.bu.edu/sp/amazon-115619461932-CFarchitect;http://iam.bu.edu/sp/amazon-586030668166-InfraMgt;http://iam.bu.edu/sp/amazon-115619461932-InfraMgt;http://iam.bu.edu/sp/amazon-253997709890-InfraMgt;http://iam.bu.edu/sp/amazon-770203350335-CFarchitect;http://iam.bu.edu/sp/amazon-586030668166-CFarchitect;http://iam.bu.edu/sp/amazon-770203350335-webadmin;http://iam.bu.edu/sp/amazon-115619461932-webteam",
           "Shib-Assertion-Count": "",
           "REMOTE_USER": "wrh@bu.edu",

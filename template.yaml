@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  Create a simple aip gateway that services access to s3 objects with lambda serving an s3 proxy mechanism
+  Create a s3 bucket and olap whose lambda function serves as an s3 proxy/filter mechanism where custom logic can be applied against requests for s3 objects.
 
 Parameters:
 
@@ -16,6 +16,13 @@ Parameters:
   CreateEC2:
     Type: String
     Description: Indicate if an ec2 instance is to be created to act as an apache proxying server to the olap
+    Default: false
+    AllowedValues: [ true, false ]
+
+  CreateBucketUser:
+    Type: String
+    Description: >
+      Indicates whether or not to create an iam user that will have access to the bucket and all its access points.
     Default: false
     AllowedValues: [ true, false ]
 
@@ -39,9 +46,12 @@ Parameters:
     Default: ""
     Description: An optional static payload that provides supplemental data to the Lambda function used to transform objects.
 
+
 Conditions:
   IncludeEC2:
     !Equals [!Ref CreateEC2, true]
+  IncludeBucketUser:
+    !Or [!Equals [!Ref CreateBucketUser, true], Condition: IncludeEC2]
   DefaultHost:
     !Equals [!Ref HostName, empty]
   CustomHostName:
@@ -119,8 +129,8 @@ Resources:
       Description: Receives https originated requests for s3 content and conditionally returns after applying authorization logic.
       Runtime: nodejs16.x
       Architectures: [ x86_64 ]
-      CodeUri: ./
-      Handler: src/Handler.GetAsset
+      CodeUri: ./src/
+      Handler: Handler.GetAsset
       Layers:
         - !Ref DependencyLayer
       Timeout: 60
@@ -161,12 +171,12 @@ Resources:
     Type: AWS::S3::AccessPoint
     Properties:
       Bucket: !Ref Bucket
-      Name: !Sub ${AWS::StackName}-ap
+      Name: !Sub ${Bucket}-ap
 
   ObjectLambdaAccessPoint:
     Type: AWS::S3ObjectLambda::AccessPoint
     Properties: 
-      Name: !Sub ${AWS::StackName}-olap
+      Name: !Sub ${Bucket}-olap
       ObjectLambdaConfiguration: 
         AllowedFeatures:
           - GetObject-Range
@@ -183,9 +193,24 @@ Resources:
                 FunctionArn: !GetAtt LambdaFunction.Arn
                 FunctionPayload: !Ref LambdaFunctionPayload
 
+  BucketUser:
+    Type: AWS::Serverless::Application
+    Condition: IncludeBucketUser
+    Properties:
+      Location: ./bucket-user.yaml
+      Tags:
+        Name: !Sub ${AWS::StackName}-ec2
+      TimeoutInMinutes: 5
+      Parameters:
+        S3BucketName: !Ref Bucket
+        SupportingAccessPointName: !Ref SupportingAccessPoint
+        ObjectLambdaAccessPointName: !Ref ObjectLambdaAccessPoint
+        LambdaArn:  !GetAtt LambdaFunction.Arn
+
   EC2:
     Type: AWS::Serverless::Application
     Condition: IncludeEC2
+    DependsOn: BucketUser
     Properties:
       Location: ./ec2.yaml
       Tags:
@@ -193,15 +218,15 @@ Resources:
       TimeoutInMinutes: 30
       Parameters:
         S3BucketName: !Ref Bucket
-        SupportingAccessPointName: !Ref SupportingAccessPoint
         ObjectLambdaAccessPointName: !Ref ObjectLambdaAccessPoint
         HostName: 
           !If 
             - IncludeEIP
             - !GetAtt EC2EIP.PublicIp
             - !If [ CustomHostName, !Ref HostName, !Ref AWS::NoValue ]
-        LambdaArn: !GetAtt LambdaFunction.Arn
         Shibboleth: !Ref Shibboleth
+        SecretArn: !GetAtt BucketUser.Outputs.SecretArn
+        S3ManagedPolicyArn: !GetAtt BucketUser.Outputs.S3ManagedPolicyArn
 
   EC2EIPAssociation:
     Type: AWS::EC2::EIPAssociation
@@ -209,6 +234,7 @@ Resources:
     Properties:
       AllocationId: !GetAtt EC2EIP.AllocationId
       InstanceId: !GetAtt EC2.Outputs.InstanceId
+
 
 Outputs:
 

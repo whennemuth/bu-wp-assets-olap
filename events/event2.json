@@ -6,19 +6,19 @@
         "inputS3Url": "https://bu-wp-assets-olap-dev-ap-770203350335.s3-accesspoint.us-east-1.amazonaws.com/__restricted/bfenster/dilbert1.gif?X-Amz-Security-Token=FwoGZXIvYXdzEDYaDLc46pOizhhhQzEz9SLKAnLgaJCmYN8QycoSlrFlg9zW9fMTBkJh1logf%2BCiTR5PaUrRN7yhrmQzQYpOHQuFE0XJDH3M3Ba1Rtz%2BAl6bqCO7lNtARLKAlGfHCIs2FROYib1PIS0zoR%2F1K7dU4DQzO6n4sSBKNgexIByxPO9d5m8EMgNG32bflGGaKghlxijm0Erkszwy0JX6phqdpvhncQs2BkIGEbM4syUyUN8uPqkKoGtxX7v5yT7RruRK5xOcvmMIApN095pE33UjbsG9ufmu6aRZnLV5ONSFTYbg4%2BKioV2xsJ7tuTKTeBmQT%2BwrV6FkuDFlkijpVZssUOLml8HtfRQSe1izgTOdKkC4f9yzCSN7xfj33OprpYYeRa9zmI7%2BJSZw09jlkOTA6iFP4Do4AnnSJPonOP8dVLmfl49oz9hIeQDEeiZi72DsYc3cU1og9D1c6nobvSiJuuKeBjJ6sunuOKylD85eirDCEEREyr5dQypsScCdK58Vcq51Oov%2F%2BecuiZzyjjQqJ%2B4JZdKP0H%2FsJNOvrz8B8BnshthpcR79gbdlZU26k57tF7opUOAlpxdBHlnb%2Fgm15Lc%2Bei3Kcci7cdbRMNVYl67WuTUkzn0v8vSybELu3dY%3D%7CMy4yMTUuMjUwLjE4Nw%3D%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230131T044601Z&X-Amz-SignedHeaders=host&X-Amz-Expires=61&X-Amz-Credential=ASIA3GU5SOU73RGZXQM6%2F20230131%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=fdda9c12c3169b0b67ffd36544a341beabd05d29d031cc7a6f3384e4289e86e7"
     },
     "configuration": {
-        "accessPointArn": "arn:aws:s3-object-lambda:us-east-1:770203350335:accesspoint/bu-wp-assets-olap-dev-olap",
+        "accessPointArn": "arn:aws:s3-object-lambda:us-east-1:770203350335:accesspoint/bu-wp-assets-olap-olap",
         "supportingAccessPointArn": "arn:aws:s3:us-east-1:770203350335:accesspoint/bu-wp-assets-olap-dev-ap",
         "payload": ""
     },
     "userRequest": {
-        "url": "https://bu-wp-assets-olap-dev-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com/__restricted/bfenster/dilbert1.gif",
+        "url": "https://bu-wp-assets-olap-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com/__restricted/bfenster/dilbert1.gif",
         "headers": {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
             "X-Forwarded-Host": "3.215.250.187",
             "Connection": "keep-alive",
             "Sec-Fetch-Site": "none",
             "Sec-Fetch-Dest": "document",
-            "Host": "bu-wp-assets-olap-dev-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com",
+            "Host": "bu-wp-assets-olap-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com",
             "Accept-Encoding": "gzip, deflate, br",
             "Sec-Fetch-Mode": "navigate",
             "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Google Chrome\";v=\"109\", \"Chromium\";v=\"109\"",

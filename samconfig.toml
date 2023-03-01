@@ -1,17 +1,17 @@
 version = 0.1
 
-[dev.global.parameters]
-stack_name = "bu-wp-assets-olap-dev"
+[default.global.parameters]
+stack_name = "bu-wp-assets-olap"
 s3_bucket = "bu-wp-assets-olap-package"
 region = "us-east-1"
 capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
 disable_rollback = true
 image_repositories = []
-tags = "Service=\"webapps\" Function=\"wordpress\" Project=\"bu-wp-to-cloud\" Landscape=\"dev\""
+tags = "Service=\"webapps\" Function=\"wordpress\" Project=\"bu-wp-to-cloud\" Landscape=\"default\""
 
-[dev.sync.parameters]
+[default.sync.parameters]
 capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
 disable_rollback = true
 
-[dev.delete.parameters]
+[default.delete.parameters]
 no-prompts = true

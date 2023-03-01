@@ -6,15 +6,15 @@
       "inputS3Url": "https://bu-wp-assets-olap-dev-ap-770203350335.s3-accesspoint.us-east-1.amazonaws.com/__restricted/bfenster/dilbert1.gif?X-Amz-Security-Token=FwoGZXIvYXdzEEwaDOki6yxfbi3GOy6XrSLKAr70dUztfvgjgvKXCx9GTMu9%2FOp9gXMoOGpu5CJ%2BbXJzFl3kxOryfrwVCZCj4Qr3vGdrjXv8yWoYrpWOrsL7HYz8PjNibn9LzFetMt9fC%2BfvQcFf5NcK4Sy3AkvOF59V%2BDmt2j9dhiS99QBLrt3WiZYM2lVuxJsDSOAEjcFR%2BnH3MXtZ7kADd3r4heJF4r5sZ28%2Fas5H1C5%2B22MfvcELJt1W2Gm31uAYa5xTppdJ2bCXGHvkev%2FQt6ia2%2FS4AjIWT9EbpO3nZWmworSBsoaDiji7vvt2KeNxOaYv5kjkUCs%2FG%2BHGqLssUt7u%2BYEkZDTWyPvzFJQx7AAkEs%2FEH9ui%2FP7cOO2BSRwt9KtPvdyYHgqrLK%2FuvHmdyRoX1bks3P5kWUeO2r4PmIps6KEWWwoa8M%2Fvkr3N2hyH2rkdgotSuALX4xdPUf6aMZshLyjTq%2BeeBjJ67efW5fXjpXcVktUBsLVQt52uu0JhrTyISbekp1QsAZybUFaFvsq32pHbn3wCPYxrhx5nHKSEt8x3GENGy9JHuVPPX92%2Bc8hM6Qg4uktX4ARElBMOY9DQ3Sz9zgvuGdMLfenGMhv3y1wTqkV7DkELjuCH66%2BoTJzi6%2Fw%3D%7CMTY4LjEyMi43OC4xMzk%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230201T030035Z&X-Amz-SignedHeaders=host&X-Amz-Expires=61&X-Amz-Credential=ASIA3GU5SOU7XDPWNFVS%2F20230201%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=61c76f9c83005c6afacc29e1bcd38fd2678ba7bc0ecb8b81ed4ced17e83ab954"
   },
   "configuration": {
-      "accessPointArn": "arn:aws:s3-object-lambda:us-east-1:770203350335:accesspoint/bu-wp-assets-olap-dev-olap",
+      "accessPointArn": "arn:aws:s3-object-lambda:us-east-1:770203350335:accesspoint/bu-wp-assets-olap-olap",
       "supportingAccessPointArn": "arn:aws:s3:us-east-1:770203350335:accesspoint/bu-wp-assets-olap-dev-ap",
       "payload": ""
   },
   "userRequest": {
-      "url": "https://bu-wp-assets-olap-dev-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com/__restricted/bfenster/dilbert1.gif",
+      "url": "https://bu-wp-assets-olap-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com/__restricted/bfenster/dilbert1.gif",
       "headers": {
           "Accept": "*/*",
-          "Host": "bu-wp-assets-olap-dev-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com",
+          "Host": "bu-wp-assets-olap-olap-770203350335.s3-object-lambda.us-east-1.amazonaws.com",
           "X-Amz-Content-SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       }
   },

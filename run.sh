@@ -2,6 +2,7 @@
 
 # Parse arguments passed to the script and set them as global variables
 parseArgs() {
+
   for nv in $@ ; do
     [ -z "$(grep '=' <<< $nv)" ] && continue;
     name="$(echo $nv | cut -d'=' -f1)"
@@ -24,6 +25,10 @@ run() {
       [ -z "$parms" ] && parms=$switch
       parms="${parms} ${override} CreateEC2=${EC2}"
     fi
+    if [ -n "$BUCKET_USER" ] ; then
+      [ -z "$parms" ] && parms=$switch
+      parms="${parms} ${override} CreateBucketUser=${BUCKET_USER}"
+    fi
     if [ -n "$HOST_NAME" ] ; then
       [ -z "$parms" ] && parms=$switch
       parms="${parms}${override} HostName=${HOST_NAME}"
@@ -34,22 +39,30 @@ run() {
     fi
     echo "$parms"
   }
+  runCommand() {
+    echo "$1"
+    if dryrun ; then return 0; fi
+    eval "$1"
+  }
   build() {
-    sam build --config-env $LANDSCAPE
+    runCommand "sam build"
   }
   package() {
-    sam package --force-upload --config-env $LANDSCAPE
+    runCommand "sam package --force-upload"
   }
   deploy() {
-    local cmd="sam deploy --force-upload --config-env $LANDSCAPE $(getStackParms)"
-    echo "$cmd"
-    if dryrun ; then return 0; fi
-    eval "$cmd" && \
-    loadAssetBucket
+    runCommand "sam deploy --debug --force-upload $(getStackParms) && loadAssetBucket"
+    # runCommand "sam deploy --debug $(getStackParms) && loadAssetBucket"
   }
   delete() {
-    emptyAssetBucket && \
-    sam delete --no-prompts --config-env $LANDSCAPE --stack-name $(getStackName)
+    runCommand "emptyAssetBucket && sam delete --no-prompts"
+  }
+  sync() {
+    runCommand "sam sync --code --resource-id LambdaFunction --no-dependency-layer"
+    # runCommand "sam sync --code --resource-id LambdaFunction --dependency-layer"
+  }
+  logs() {
+    runCommand "sam logs --stack-name $(getStackName)"
   }
 
   parseArgs $@
@@ -64,12 +77,9 @@ run() {
     redeploy)
       delete && build && deploy ;;
     sync)
-      # sam sync --code --resource-id LambdaFunction --config-env $LANDSCAPE --no-dependency-layer
-      sam sync --code --resource-id LambdaFunction --config-env $LANDSCAPE --dependency-layer
-      ;;
+      sync ;;
     logs)
-      sam logs --stack-name $(getStackName)
-      ;;
+      logs ;;
     delete)
       delete ;;
   esac
@@ -84,7 +94,8 @@ emptyAssetBucket() {
 }
 
 getStackName() {
-  local header='dev\.global\.parameters'
+  local landscape=${1:-"default"}
+  local header=$landscape'\.global\.parameters'
   grep -E '('$header')|(stack_name)' samconfig.toml \
     | grep -E -A1 $header \
     | tail -1 \
