@@ -1,0 +1,172 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+
+Description: >
+  This stack creates the lambda function with supporting access point and object lambda access point for the bucket it applies to.
+
+Parameters:
+
+  ParentStackName:
+    Type: String
+    Description: The name of the parent stack.
+
+  CreateEC2:
+    Type: String
+    Description: Indicate if an ec2 instance is to be created to act as an apache proxying server to the olap
+    Default: false
+    AllowedValues: [ true, false ]
+
+  EC2EIPPublicIP:
+    Type: String
+    Description: An elastic ip for the ec2 instance
+    Default: empty
+
+  HostName:
+    Type: String
+    Description: >
+      An apache client that wants to proxy to the olap will have a virtual host configuration with a ServerName set to this domain name or ip address.
+      If the ec2 instance is being created, then its elastic IP will substitute for this value. If not, then you are running an apache host locally 
+      and have set this value as a localhost mapping in your hosts file.
+    Default: empty
+
+  BucketName:
+    Type: String
+    Description: The name of the s3 bucket the lambda function provide object-lambda functionality for.
+
+  Shibboleth:
+    Type: String
+    Description: >
+      Indicates if the object lambda will require that requests for s3 content include header or token info that proves a successful BU login.
+    Default: false
+    AllowedValues: [ true, false ]
+
+  LambdaFunctionPayload:
+    Type: String
+    Default: ""
+    Description: An optional static payload that provides supplemental data to the Lambda function used to transform objects.
+    
+  EnableCloudWatchMonitoring:
+    Type: String
+    Description: >
+      Flag to enable CloudWatch request metrics from S3 Object Lambda. This also creates CloudWatch alarms
+      to monitor the request metrics.
+    Default: false
+    AllowedValues: [ true, false ]
+
+
+Conditions:
+  IncludeEC2:
+    !Equals [!Ref CreateEC2, true]
+  DefaultHost:
+    !Equals [!Ref HostName, empty]
+  CustomHostName:
+    !Not [!Equals [!Ref HostName, empty]]
+  IncludeEIP:
+    !And [Condition: IncludeEC2, Condition: DefaultHost]
+
+
+Resources:
+
+  LambdaLogsGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ParentStackName}-s3-proxy
+      RetentionInDays: 90
+
+  DependencyLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub ${ParentStackName}-s3-proxy-dependencies
+      Description: !Sub Dependency layer for lambda function ${ParentStackName}-s3-proxy
+      ContentUri: dependencies/
+      CompatibleRuntimes:
+        - nodejs14.x
+        - nodejs16.x
+      LicenseInfo: 'MIT'
+      RetentionPolicy: Retain
+
+  LambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${ParentStackName}-s3-proxy
+      Description: Receives https originated requests for s3 content and conditionally returns after applying authorization logic.
+      Runtime: nodejs16.x
+      Architectures: [ x86_64 ]
+      CodeUri: ./src/
+      Handler: Handler.GetAsset
+      Layers:
+        - !Ref DependencyLayer
+      Timeout: 60
+      Environment:
+        Variables:
+          S3_REGION: !Ref AWS::Region
+          S3_BUCKET: !Ref BucketName
+          SHIBBOLETH: !Ref Shibboleth
+          HOST_NAME: 
+            !If 
+              - CustomHostName
+              - !Ref HostName
+              - !If 
+                  - IncludeEIP
+                  - !Ref EC2EIPPublicIP
+                  - !If 
+                      - IncludeEC2
+                      - "lookup"
+                      - "local-ol"
+              # - !GetAtt EC2.Outputs.PublicDnsName
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref BucketName
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action: 
+                - logs:*
+              Resource: 
+                - !GetAtt LambdaLogsGroup.Arn
+            - Effect: Allow
+              Action: 
+                s3-object-lambda:WriteGetObjectResponse
+              Resource:
+                '*'
+
+  SupportingAccessPoint:
+    Type: AWS::S3::AccessPoint
+    Properties:
+      Bucket: !Ref BucketName
+      Name: !Sub ${BucketName}-ap
+
+  ObjectLambdaAccessPoint:
+    Type: AWS::S3ObjectLambda::AccessPoint
+    Properties: 
+      Name: !Sub ${BucketName}-olap
+      ObjectLambdaConfiguration: 
+        AllowedFeatures:
+          - GetObject-Range
+          - GetObject-PartNumber
+          - HeadObject-Range
+          - HeadObject-PartNumber
+        CloudWatchMetricsEnabled: !Ref EnableCloudWatchMonitoring
+        SupportingAccessPoint: !GetAtt SupportingAccessPoint.Arn
+        TransformationConfigurations: 
+          - Actions: 
+              - GetObject
+            ContentTransformation: 
+              AwsLambda:
+                FunctionArn: !GetAtt LambdaFunction.Arn
+                FunctionPayload: !Ref LambdaFunctionPayload
+
+Outputs:
+
+  SupportingAccessPointName:
+    Description: The name of the supporting access point
+    Value: !Ref SupportingAccessPoint
+
+  ObjectLambdaAccessPointName:
+    Description: The object lambda access point name
+    Value: !Ref ObjectLambdaAccessPoint
+
+  LambdaArn:
+    Description: The Arn of the lambda function
+    Value: !GetAtt LambdaFunction.Arn

@@ -13,24 +13,29 @@ Parameters:
   SupportingAccessPointName:
     Description: The supporting access point name for the s3 bucket this instance will be accessing.
     Type: String
+    Default: empty
 
   ObjectLambdaAccessPointName:
     Description: The object lambda access point name for the s3 bucket this instance will be accessing.
     Type: String
+    Default: empty
 
   LambdaArn:
     Description: The arn of the lambda function associated with the olap
     Type: String
+    Default: empty
 
+
+Conditions:
+  # If any one of the following three conditions is false (no value provided), then the other 2 would be also.
+  IncludeSap: 
+    !Not [!Equals [!Ref SupportingAccessPointName, empty]]
+  IncludeOlap: 
+    !Not [!Equals [!Ref ObjectLambdaAccessPointName, empty]]
+  IncludeLambda: 
+    !Not [!Equals [!Ref LambdaArn, empty]]
 
 Resources:
-
-  EC2LogsGroup:
-    Type: AWS::Logs::LogGroup
-    DeletionPolicy: Delete
-    Properties:
-      LogGroupName: !Sub /aws/ec2/${AWS::StackName}
-      RetentionInDays: 30
 
   BucketUser:
     Type: AWS::IAM::User
@@ -85,33 +90,47 @@ Resources:
         Statement:
         - Effect: Allow
           Resource: 
-            - !Sub arn:aws:s3:::${S3BucketName}
-            - !Sub arn:aws:s3:::${S3BucketName}/*
-          Action: "*"
-        - Effect: Allow
-          Resource: 
-            - !Sub arn:aws:s3:::kuali-conf
-            - !Sub arn:aws:s3:::kuali-conf/*
-          Action: "*"
-        - Effect: Allow
-          Resource: 
-            - !Sub arn:aws:s3:${AWS::Region}:${AWS::AccountId}:accesspoint/${SupportingAccessPointName}
-            - !Sub arn:aws:s3:${AWS::Region}:${AWS::AccountId}:accesspoint/${SupportingAccessPointName}/*
-          Action: "*"
-        - Effect: Allow
-          Resource: 
-            - !Sub ${LambdaArn}
-          Action: "*"
-        - Effect: Allow
-          Resource: 
-            - !Sub arn:aws:s3-object-lambda:${AWS::Region}:${AWS::AccountId}:accesspoint/${ObjectLambdaAccessPointName}
-            - !Sub arn:aws:s3-object-lambda:${AWS::Region}:${AWS::AccountId}:accesspoint/${ObjectLambdaAccessPointName}/*
-          Action: "*"
-        - Effect: Allow
-          Resource: 
             - !Ref Secret
           Action:
             - secretsmanager:GetSecretValue
+        - Effect: Allow
+          Resource: 
+            - !Sub arn:aws:s3:::${S3BucketName}
+            - !Sub arn:aws:s3:::${S3BucketName}/*
+          Action: "*"
+        - !If
+          - IncludeLambda
+          - Effect: Allow
+            Resource: 
+              - !Sub ${LambdaArn}
+            Action: "*"
+          - !Ref AWS::NoValue
+        - !If
+          - IncludeLambda
+          - Effect: Allow
+            Resource: 
+              - !Sub arn:aws:s3:::kuali-conf
+              - !Sub arn:aws:s3:::kuali-conf/*
+            Action: "*"
+          - !Ref AWS::NoValue
+        - !If
+          - IncludeSap
+          - Effect: Allow
+            Resource: 
+              - !Sub arn:aws:s3:${AWS::Region}:${AWS::AccountId}:accesspoint/${SupportingAccessPointName}
+              - !Sub arn:aws:s3:${AWS::Region}:${AWS::AccountId}:accesspoint/${SupportingAccessPointName}/*
+            Action: "*"
+          - !Ref AWS::NoValue
+        - !If
+          - IncludeOlap
+          - Effect: Allow
+            Resource: 
+              - !Sub arn:aws:s3-object-lambda:${AWS::Region}:${AWS::AccountId}:accesspoint/${ObjectLambdaAccessPointName}
+              - !Sub arn:aws:s3-object-lambda:${AWS::Region}:${AWS::AccountId}:accesspoint/${ObjectLambdaAccessPointName}/*
+            Action: "*"
+          - !Ref AWS::NoValue
+
+    
 
 Outputs:
 

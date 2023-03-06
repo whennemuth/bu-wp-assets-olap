@@ -1,5 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
+
 Description: >
   Create a s3 bucket and olap whose lambda function serves as an s3 proxy/filter mechanism where custom logic can be applied against requests for s3 objects.
 
@@ -13,16 +14,23 @@ Parameters:
     Default: false
     AllowedValues: [ true, false ]
 
-  CreateEC2:
+  OLAP:
     Type: String
-    Description: Indicate if an ec2 instance is to be created to act as an apache proxying server to the olap
-    Default: false
+    Description: >
+      Just create the s3 bucket. Skip lambda and access point creatioon.
+    Default: true
     AllowedValues: [ true, false ]
 
   CreateBucketUser:
     Type: String
     Description: >
       Indicates whether or not to create an iam user that will have access to the bucket and all its access points.
+    Default: false
+    AllowedValues: [ true, false ]
+
+  CreateEC2:
+    Type: String
+    Description: Indicate if an ec2 instance is to be created to act as an apache proxying server to the olap
     Default: false
     AllowedValues: [ true, false ]
 
@@ -48,8 +56,12 @@ Parameters:
 
 
 Conditions:
+  BucketOnly:
+    !Equals [!Ref OLAP, false]
+  IncludeLambda:
+    !Not [Condition: BucketOnly]
   IncludeEC2:
-    !Equals [!Ref CreateEC2, true]
+    !And [!Equals [!Ref CreateEC2, true], Condition: IncludeLambda]
   IncludeBucketUser:
     !Or [!Equals [!Ref CreateBucketUser, true], Condition: IncludeEC2]
   DefaultHost:
@@ -57,7 +69,7 @@ Conditions:
   CustomHostName:
     !Not [Condition: DefaultHost]
   IncludeEIP:
-    !And [Condition: IncludeEC2, Condition: DefaultHost]
+    !And [Condition: IncludeEC2, Condition: DefaultHost, Condition: IncludeLambda]
 
 Resources:
 
@@ -103,95 +115,27 @@ Resources:
     Properties:
       Domain: vpc
 
-  LambdaLogsGroup:
-    Type: AWS::Logs::LogGroup
-    DeletionPolicy: Delete
+  Lambda:
+    Type: AWS::Serverless::Application
+    Condition: IncludeLambda
     Properties:
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-s3-proxy
-      RetentionInDays: 90
-
-  DependencyLayer:
-    Type: AWS::Serverless::LayerVersion
-    Properties:
-      LayerName: !Sub ${AWS::StackName}-s3-proxy-dependencies
-      Description: !Sub Dependency layer for lambda function ${AWS::StackName}-s3-proxy
-      ContentUri: dependencies/
-      CompatibleRuntimes:
-        - nodejs14.x
-        - nodejs16.x
-      LicenseInfo: 'MIT'
-      RetentionPolicy: Retain
-
-  LambdaFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub ${AWS::StackName}-s3-proxy
-      Description: Receives https originated requests for s3 content and conditionally returns after applying authorization logic.
-      Runtime: nodejs16.x
-      Architectures: [ x86_64 ]
-      CodeUri: ./src/
-      Handler: Handler.GetAsset
-      Layers:
-        - !Ref DependencyLayer
-      Timeout: 60
-      Environment:
-        Variables:
-          S3_REGION: !Ref AWS::Region
-          S3_BUCKET: !Ref Bucket
-          SHIBBOLETH: !Ref Shibboleth
-          HOST_NAME: 
-            !If 
-              - CustomHostName
-              - !Ref HostName
-              - !If 
-                  - IncludeEIP
-                  - !GetAtt EC2EIP.PublicIp
-                  - !If 
-                      - IncludeEC2
-                      - "lookup"
-                      - "local-ol"
-              # - !GetAtt EC2.Outputs.PublicDnsName
-      Policies:
-        - S3CrudPolicy:
-            BucketName: !Ref Bucket
-        - Version: 2012-10-17
-          Statement:
-            - Effect: Allow
-              Action: 
-                - logs:*
-              Resource: 
-                - !GetAtt LambdaLogsGroup.Arn
-            - Effect: Allow
-              Action: 
-                s3-object-lambda:WriteGetObjectResponse
-              Resource:
-                '*'
-
-  SupportingAccessPoint:
-    Type: AWS::S3::AccessPoint
-    Properties:
-      Bucket: !Ref Bucket
-      Name: !Sub ${Bucket}-ap
-
-  ObjectLambdaAccessPoint:
-    Type: AWS::S3ObjectLambda::AccessPoint
-    Properties: 
-      Name: !Sub ${Bucket}-olap
-      ObjectLambdaConfiguration: 
-        AllowedFeatures:
-          - GetObject-Range
-          - GetObject-PartNumber
-          - HeadObject-Range
-          - HeadObject-PartNumber
-        CloudWatchMetricsEnabled: !Ref EnableCloudWatchMonitoring
-        SupportingAccessPoint: !GetAtt SupportingAccessPoint.Arn
-        TransformationConfigurations: 
-          - Actions: 
-              - GetObject
-            ContentTransformation: 
-              AwsLambda:
-                FunctionArn: !GetAtt LambdaFunction.Arn
-                FunctionPayload: !Ref LambdaFunctionPayload
+      Location: ./lambda.yaml
+      Tags:
+        Name: !Sub ${AWS::StackName}-ec2
+      TimeoutInMinutes: 5
+      Parameters:
+        ParentStackName: !Ref AWS::StackName
+        CreateEC2: !Ref CreateEC2
+        EC2EIPPublicIP: 
+          !If
+            - IncludeEIP
+            - !GetAtt EC2EIP.PublicIp
+            - !Ref AWS::NoValue
+        HostName: !Ref HostName
+        BucketName: !Ref Bucket
+        Shibboleth: !Ref Shibboleth
+        LambdaFunctionPayload: !Ref LambdaFunctionPayload
+        EnableCloudWatchMonitoring: !Ref EnableCloudWatchMonitoring
 
   BucketUser:
     Type: AWS::Serverless::Application
@@ -203,9 +147,21 @@ Resources:
       TimeoutInMinutes: 5
       Parameters:
         S3BucketName: !Ref Bucket
-        SupportingAccessPointName: !Ref SupportingAccessPoint
-        ObjectLambdaAccessPointName: !Ref ObjectLambdaAccessPoint
-        LambdaArn:  !GetAtt LambdaFunction.Arn
+        SupportingAccessPointName: 
+          !If
+            - IncludeLambda
+            - !GetAtt Lambda.Outputs.SupportingAccessPointName
+            - !Ref AWS::NoValue
+        ObjectLambdaAccessPointName:
+          !If
+            - IncludeLambda
+            - !GetAtt Lambda.Outputs.ObjectLambdaAccessPointName
+            - !Ref AWS::NoValue
+        LambdaArn:
+          !If
+            - IncludeLambda
+            - !GetAtt Lambda.Outputs.LambdaArn
+            - !Ref AWS::NoValue
 
   EC2:
     Type: AWS::Serverless::Application
@@ -218,7 +174,11 @@ Resources:
       TimeoutInMinutes: 30
       Parameters:
         S3BucketName: !Ref Bucket
-        ObjectLambdaAccessPointName: !Ref ObjectLambdaAccessPoint
+        ObjectLambdaAccessPointName:
+          !If
+            - IncludeLambda
+            - !GetAtt Lambda.Outputs.ObjectLambdaAccessPointName
+            - !Ref AWS::NoValue
         HostName: 
           !If 
             - IncludeEIP
