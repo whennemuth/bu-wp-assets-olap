@@ -82,6 +82,16 @@ Parameters:
     Description: The branch/commit of the source code in the github repo
     Default: master
 
+  Service:
+    Description: Service catalog name
+    Type: String
+    Default: websites
+
+  Function:
+    Description: The Function within the Service
+    Type: String
+    Default: wordpress
+
 
 Resources:
 
@@ -91,6 +101,13 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/ec2/${AWS::StackName}
       RetentionInDays: 30
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-log-group
+        - Key: Service
+          Value: !Ref Service
+        - Key: Function
+          Value: !Ref Function
 
   EC2Role:
     Type: AWS::IAM::Role
@@ -106,7 +123,7 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
         - !Ref S3ManagedPolicyArn
       Policies:
-        - PolicyName: !Sub ${AWS::StackName}-ec2-log-policy
+        - PolicyName: !Sub ${AWS::StackName}-log-policy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -115,11 +132,18 @@ Resources:
                   - logs:*
                 Resource: 
                   - !GetAtt EC2LogsGroup.Arn
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-user-role
+        - Key: Service
+          Value: !Ref Service
+        - Key: Function
+          Value: !Ref Function
 
   EC2InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
-      InstanceProfileName: !Sub ${AWS::StackName}-ec2-profile
+      InstanceProfileName: !Sub ${AWS::StackName}-profile
       Path: "/"
       Roles:
       - !Ref EC2Role
@@ -128,7 +152,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: !Sub Defines access for the ${AWS::StackName} ec2 instance.
-      GroupName: !Sub ${AWS::StackName}-ec2-sg
+      GroupName: !Sub ${AWS::StackName}-sg
       VpcId: !Ref VpcId
       SecurityGroupIngress:
         - Description: "HTTP ingress to the EC2 instance"
@@ -141,6 +165,13 @@ Resources:
           IpProtocol: tcp
           FromPort: 443
           ToPort: 443
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-ec2-sg
+        - Key: Service
+          Value: !Ref Service
+        - Key: Function
+          Value: !Ref Function
 
   EC2Instance:
     Type: AWS::EC2::Instance
@@ -163,6 +194,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-ec2
+        - Key: Service
+          Value: !Ref Service
+        - Key: Function
+          Value: !Ref Function
       UserData: 
         "Fn::Base64": !Sub |
           #!/bin/bash

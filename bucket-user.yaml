@@ -25,6 +25,16 @@ Parameters:
     Type: String
     Default: empty
 
+  Service:
+    Description: Service catalog name
+    Type: String
+    Default: websites
+
+  Function:
+    Description: The Function within the Service
+    Type: String
+    Default: wordpress
+
 
 Conditions:
   # If any one of the following three conditions is false (no value provided), then the other 2 would be also.
@@ -40,10 +50,14 @@ Resources:
   BucketUser:
     Type: AWS::IAM::User
     Properties:
-      UserName: !Sub ${AWS::StackName}-user
+      UserName: !Sub ${AWS::StackName}
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-user
+          Value: !Sub ${AWS::StackName}
+        - Key: Service
+          Value: !Ref Service
+        - Key: Function
+          Value: !Ref Function
 
   AccessKey:
     Type: AWS::IAM::AccessKey
@@ -76,6 +90,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${BucketUser}/AccessKey
+        - Key: Service
+          Value: !Ref Service
+        - Key: Function
+          Value: !Ref Function
 
   S3ManagedPolicy:
     Type: AWS::IAM::ManagedPolicy

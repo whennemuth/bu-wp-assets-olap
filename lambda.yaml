@@ -44,7 +44,7 @@ Parameters:
     Type: String
     Default: ""
     Description: An optional static payload that provides supplemental data to the Lambda function used to transform objects.
-    
+
   EnableCloudWatchMonitoring:
     Type: String
     Description: >
@@ -52,6 +52,16 @@ Parameters:
       to monitor the request metrics.
     Default: false
     AllowedValues: [ true, false ]
+
+  Service:
+    Description: Service catalog name
+    Type: String
+    Default: websites
+
+  Function:
+    Description: The Function within the Service
+    Type: String
+    Default: wordpress
 
 
 Conditions:
@@ -73,6 +83,13 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/lambda/${ParentStackName}-s3-proxy
       RetentionInDays: 90
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-log-group
+        - Key: Service
+          Value: !Ref Service
+        - Key: Function
+          Value: !Ref Function
 
   DependencyLayer:
     Type: AWS::Serverless::LayerVersion
@@ -130,6 +147,10 @@ Resources:
                 s3-object-lambda:WriteGetObjectResponse
               Resource:
                 '*'
+      Tags:
+        Name: !Sub ${AWS::StackName}-s3-proxy
+        Service: !Ref Service
+        Function: !Ref Function
 
   SupportingAccessPoint:
     Type: AWS::S3::AccessPoint

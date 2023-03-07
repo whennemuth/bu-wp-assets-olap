@@ -54,6 +54,16 @@ Parameters:
     Default: ""
     Description: An optional static payload that provides supplemental data to the Lambda function used to transform objects.
 
+  Service:
+    Description: Service catalog name
+    Type: String
+    Default: websites
+
+  Function:
+    Description: The Function within the Service
+    Type: String
+    Default: wordpress
+  
 
 Conditions:
   BucketOnly:
@@ -80,6 +90,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-assets
+        - Key: Service
+          Value: !Ref Service
+        - Key: Function
+          Value: !Ref Function
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -114,6 +128,13 @@ Resources:
     Condition: IncludeEIP
     Properties:
       Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-assets
+        - Key: Service
+          Value: !Ref Service
+        - Key: Function
+          Value: !Ref Function
 
   Lambda:
     Type: AWS::Serverless::Application
@@ -122,6 +143,8 @@ Resources:
       Location: ./lambda.yaml
       Tags:
         Name: !Sub ${AWS::StackName}-ec2
+        Service: !Ref Service
+        Function: !Ref Function
       TimeoutInMinutes: 5
       Parameters:
         ParentStackName: !Ref AWS::StackName
@@ -144,6 +167,8 @@ Resources:
       Location: ./bucket-user.yaml
       Tags:
         Name: !Sub ${AWS::StackName}-ec2
+        Service: !Ref Service
+        Function: !Ref Function
       TimeoutInMinutes: 5
       Parameters:
         S3BucketName: !Ref Bucket
@@ -171,6 +196,8 @@ Resources:
       Location: ./ec2.yaml
       Tags:
         Name: !Sub ${AWS::StackName}-ec2
+        Service: !Ref Service
+        Function: !Ref Function
       TimeoutInMinutes: 30
       Parameters:
         S3BucketName: !Ref Bucket
