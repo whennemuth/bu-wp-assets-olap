@@ -20,7 +20,7 @@ parseArgs() {
 }
 
 dryrun() {
-  [ "${DRYRUN,,}" == 'true' ] && true || false
+  [ "${DRYRUN}" == 'true' ] && true || false
 }
 
 run() {
