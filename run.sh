@@ -3,12 +3,17 @@
 # Parse arguments passed to the script and set them as global variables
 parseArgs() {
 
+  uppercase() {
+    echo "$1" | tr '[:lower:]' '[:upper:]'
+  }
+
   for nv in $@ ; do
     [ -z "$(grep '=' <<< $nv)" ] && continue;
     name="$(echo $nv | cut -d'=' -f1)"
+    name="$(uppercase $name)"
     value="$(echo $nv | cut -d'=' -f2-)"
-    eval "${name^^}=$value" 2> /dev/null || true
-    if [ "${name^^}" == 'PROFILE' ] ; then
+    eval "${name}=$value" 2> /dev/null || true
+    if [ "${name}" == 'PROFILE' ] ; then
       export AWS_PROFILE="$value"
     fi
   done
